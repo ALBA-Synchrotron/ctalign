@@ -38,8 +38,29 @@ class TomoSubsequentAlign(Alignment):
 
     def tomo_subsequent_alignment(self):
 
+        #################################################
+        #  Get align and store aligned images in HDF5  ##
+        #################################################
+
+        self.input_nexusfile.opendata('TomoNormalized')
+        self.central_img_num = int(self.nFrames) / 2
+
+        self.image_proj1 = self.get_single_image(self.central_img_num)
+        self.proj1_roi_selection = self.image_proj1[0, :, :]
+        # cv2.imshow('proj1',proj1)
+        # cv2.waitKey(0)
+        slab_offset = [self.central_img_num, 0, 0]
+        self.nxsfield = self.align[self.data_nxs]
+        self.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
+        print('Initial reference image (%d) stored' % self.central_img_num)
+
+        self.central_pixel_rows = int(self.numrows / 2)
+        self.central_pixel_cols = int(self.numcols / 2)
+
+        print('Initialization completed\n')
         print('Align tomography projections')
 
+        # In openCV first we indicate the columns and then the rows.
         # Chose here the number of ROIS: Use odd numbers.
         num_rois_vertical = self.numroivert
         num_rois_horizontal = self.numroihoriz
@@ -86,6 +107,7 @@ class TomoSubsequentAlign(Alignment):
             col_tem_from.append(origin_pixel_cols +
                                 c_horiz * offset_horizontal)
 
+        util_obj = Utils()
         self.counter = 0
         # From the middle image to the last image going fordward.
         # proj1 is the image from which we extract the template
@@ -115,14 +137,14 @@ class TomoSubsequentAlign(Alignment):
                                      row_tem_from[vert])
 
                     top_left_move = (max_loc[0], max_loc[1])
-                    mv_vector = self.findMvVector(top_left_base,
-                                                  top_left_move)
+                    mv_vector = self.find_mv_vector(top_left_base,
+                                                    top_left_move)
 
                     roimove_vectors[vert][horiz] = mv_vector
                     total_mv_vector = total_mv_vector + mv_vector
 
             # First we place the rows and then the columns
-            # to be able to apply mvProjections.
+            # to be able to apply mv_projection.
             # Add one pixel for drift to rows for drift correction.
             rows = total_mv_vector[1]/(num_rois_vertical*num_rois_horizontal)
             cols = total_mv_vector[0]/(num_rois_vertical*num_rois_horizontal)
@@ -131,16 +153,14 @@ class TomoSubsequentAlign(Alignment):
             # print(avg_move_vector)
             zeros_img = np.zeros((self.numrows, self.numcols),
                                  dtype='float32')
-            proj2_moved = self.mvProjection(zeros_img, proj2,
+            proj2_moved = self.mv_projection(zeros_img, proj2,
                                             avg_move_vector)
             proj2 = np.zeros([1, self.numrows, self.numcols],
                              dtype='float32')
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
-            self.writeImageInHdf5(proj2, self.nxsfied, slab_offset)
+            self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
             self.proj1 = proj2_moved
-
-            util_obj = Utils()
             self.counter = util_obj.count(self.counter)
 
         # From the middle image to the first image going backward.
@@ -169,13 +189,13 @@ class TomoSubsequentAlign(Alignment):
                     top_left_base = (col_tem_from[horiz],
                                      row_tem_from[vert])
                     top_left_move = (max_loc[0], max_loc[1])
-                    mv_vector = self.findMvVector(top_left_base,
-                                                  top_left_move)
+                    mv_vector = self.find_mv_vector(top_left_base,
+                                                    top_left_move)
                     roimove_vectors[vert][horiz] = mv_vector
                     total_mv_vector = total_mv_vector + mv_vector
 
             # First we place the rows and then the columns
-            # to be able to apply mvProjections.
+            # to be able to apply mv_projections.
             # Add one pixel for drift to rows for drift correction.
             rows = total_mv_vector[1]/(num_rois_vertical*num_rois_horizontal)
             cols = total_mv_vector[0]/(num_rois_vertical*num_rois_horizontal)
@@ -183,17 +203,21 @@ class TomoSubsequentAlign(Alignment):
 
             zeros_img = np.zeros((self.numrows, self.numcols),
                                  dtype='float32')
-            proj2_moved = self.mvProjection(zeros_img, proj2,
+            proj2_moved = self.mv_projection(zeros_img, proj2,
                                             avg_move_vector)
             proj2 = np.zeros([1, self.numrows, self.numcols],
                              dtype='float32')
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
-            self.writeImageInHdf5(proj2, self.nxsfied, slab_offset)
+            self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
             self.proj1 = proj2_moved
 
             self.mv_vector_list.append(avg_move_vector)
             self.counter = util_obj.count(self.counter)
 
         if self.printmv == 1:
-            Utils.print_move(self.mv_vect_filename, self.mv_vector_list)
+            util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
+
+        self.input_nexusfile.closedata()
+        self.input_nexusfile.closegroup()
+        self.input_nexusfile.close()

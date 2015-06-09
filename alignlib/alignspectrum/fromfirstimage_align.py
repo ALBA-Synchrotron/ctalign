@@ -20,8 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-__all__ = ["SpectrumFromFirstImgAlign"]
-
 import cv2
 import numpy as np
 from alignlib.align import Alignment
@@ -39,7 +37,36 @@ class SpectrumFromFirstImgAlign(Alignment):
 
     # Align using the first image as reference.
     def spectrum_from_first_img_alignment(self):
+
+        #################################################
+        #  Get align and store aligned images in HDF5  ##
+        #################################################
+        self.input_nexusfile.opendata('spectroscopy_normalized')
+        self.central_img_num = 0
+
+        self.image_proj1 = self.get_single_image(self.central_img_num)
+        self.proj1 = self.image_proj1[0, :, :]
+
+        slab_offset = [self.central_img_num, 0, 0]
+        self.nxsfield = self.align[self.data_nxs]
+        self.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
+        print('Initial reference image (%d) stored\n' % self.central_img_num)
+
+        self.central_pixel_rows = int(self.numrows / 2)
+        self.central_pixel_cols = int(self.numcols / 2)
+
+        self.row_tem_from = self.central_pixel_rows - self.height_tem / 2
+        self.row_tem_to = self.central_pixel_rows + self.height_tem / 2
+        self.col_tem_from = self.central_pixel_cols - self.width_tem / 2
+        self.col_tem_to = self.central_pixel_cols + self.width_tem / 2
+
+        # In openCV first we indicate the columns and then the rows.
+        self.top_left_base = (self.col_tem_from, self.row_tem_from)
+        print('Initialization completed')
+
         print("Align spectroscopic images regarding the first image")
+        util_obj = Utils()
+        self.counter = 0
         template = self.proj1[self.row_tem_from:self.row_tem_to,
                               self.col_tem_from:self.col_tem_to]
 
@@ -54,22 +81,22 @@ class SpectrumFromFirstImgAlign(Alignment):
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
             top_left_move = max_loc
-            move_vector = self.findMvVector(self.top_left_base, top_left_move)
+            move_vector = self.find_mv_vector(self.top_left_base, top_left_move)
             mv_vector = [move_vector[1], move_vector[0]]
             self.mv_vector_list.append(mv_vector)
             zeros_img = np.zeros((self.numrows, self.numcols),
                                  dtype='float32')
-            proj2_moved = self.mvProjection(zeros_img, proj2, mv_vector)
+            proj2_moved = self.mv_projection(zeros_img, proj2, mv_vector)
 
             proj2 = np.zeros([1, self.numrows, self.numcols],
                              dtype='float32')
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
-            self.writeImageInHdf5(proj2, self.nxsfied, slab_offset)
-            print('Image %d aligned' % numimg)
+            self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
+            self.counter = util_obj.count(self.counter)
 
         if self.printmv == 1:
-            Utils.print_move(self.mv_vect_filename, self.mv_vector_list)
+            util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
         self.input_nexusfile.closedata()
         self.input_nexusfile.closegroup()

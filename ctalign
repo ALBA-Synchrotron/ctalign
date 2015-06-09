@@ -67,7 +67,7 @@ def main():
                                              args.printmv,
                                              args.nroihoriz,
                                              args.nroivert)
-        tomo_alignment.align_images()
+        tomo_alignment.initialize_align()
         tomo_alignment.tomo_subsequent_alignment()
 
     elif args.spectrum == 1:
@@ -79,7 +79,7 @@ def main():
                                                          args.printmv,
                                                          args.nroihoriz,
                                                          args.nroivert)
-            spectrum_alignment.align_images()
+            spectrum_alignment.initialize_align()
             spectrum_alignment.spectrum_subsequent_alignment()
 
         elif args.firstimg == 1:
@@ -90,7 +90,7 @@ def main():
                                                            args.printmv,
                                                            args.nroihoriz,
                                                            args.nroivert)
-            spectrum_alignment.align_images()
+            spectrum_alignment.initialize_align()
             spectrum_alignment.spectrum_from_first_img_alignment()
 
         elif args.firstimg == 2:
@@ -101,7 +101,7 @@ def main():
                                                      args.printmv,
                                                      args.nroihoriz,
                                                      args.nroivert)
-            spectrum_alignment.align_images()
+            spectrum_alignment.initialize_align()
             spectrum_alignment.spectrum_linear_alignment()
 
     print("\nImages aligned\n\n")
