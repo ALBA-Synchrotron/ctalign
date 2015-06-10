@@ -1,6 +1,5 @@
 """
 (C) Copyright 2014 Marc Rosanes
-(C) Copyright 2014 Miquel Garriga 
 The program is distributed under the terms of the 
 GNU General Public License (or the Lesser GPL).
 
@@ -19,14 +18,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 
-aep1: alignment enhancement proposal 1
+ctalign project has born with the initial idea of make an automatic
+alignment of tomography projections in order to allow further reconstruction.
+Nowadays it is used for not only for tomography projection alignment, but also 
+for spectroscopic images alignment at ALBA BL09-Mistral beamline.
 
-The alignment projections project has born with the idea of make a fast 
-alignment of a tomography projections in order to allow further reconstruction.
-First we have tried to perform the alignment using the SAD algorithm
-with a central ROI for each projection. But the results were only satisfactory
-for some projections, others were really poorly aligned. 
+In the future, a generalization of the project could be studied, in order to be 
+used in other beamlines; but this is not the case in the current stage. 
 
-Because of the fact exposed above, we have tried to explore the library openCV
-in order to improve the alignment using its functions. This has been the
-idea of aep1 and the alignment results have improved.
+The alignment is being done by using the function matchTemplate from python
+openCV (cv2).
+
