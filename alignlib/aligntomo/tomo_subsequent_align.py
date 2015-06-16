@@ -36,6 +36,124 @@ class TomoSubsequentAlign(Alignment):
                                                   num_roi_horizontal,
                                                   num_roi_vertical)
 
+
+
+
+
+    def find_mv_vector_from_many_rois(self, move_vectors_matrix):
+        """Find move vector from many ROIs.
+        Input argument: Matrix of move vectors
+        Return variable: Average move vector of relevant move vectors.
+        A move vector is considered to be relevant if it is similar to
+        the other move vectors in a certain degree. It it is to distant from
+        other move vectors it is not taken into account for being considered
+        in the calculation of the returned average move vector."""
+
+        # Useful for sorting list of lists based on second list element.
+        # Our list of lists, is a list of vectors.
+        from operator import itemgetter
+
+        # Threshold in pixels for knowing if we increment or not the counter
+        # indicating how many move vectors are similar to the processed move
+        # vector currently being processed.
+        pixels_threshold = 4
+
+        # Threshold for deciding if we keep or not a given move vector,
+        # according in how many similar vectors to itself exists.
+        # Expressed in tant_per_one.
+        threshold_similarity = 0.5
+
+        mv_list = list_of_mv_vectors_for_processing = []
+
+        for vert in range(self.numroivert):
+            for horiz in range(self.numroihoriz):
+                #print(move_vectors_matrix[vert][horiz])
+
+                mv_list.append(list(move_vectors_matrix[vert][horiz]))
+
+        # We sort the mv_vectors list by its first element
+        sorted_mv_list = sorted(mv_list)
+
+        print("\nSorted full vector list")
+        print(sorted_mv_list)
+
+        len_mv_list = len(mv_list)
+        threshold_similar_vectors = threshold_similarity * len_mv_list
+
+        # Empty list that will contain the number of vectors similar between
+        # them, based by the similarity between first vector elements.
+        # We will use a given tolerance (in number of pixels to be moved),
+        # in order to decided if the vectors are similar or not, based on the
+        # first element.
+        counts_of_similar_vectors = len_mv_list*[0]
+
+        for i in range(len(sorted_mv_list)):
+            vector = sorted_mv_list[i]
+            counts = 0
+            for j in range(len(sorted_mv_list)):
+                if i != j:
+                    # Vector to compare: vector_to_cmp
+                    vector_to_cmp = sorted_mv_list[j]
+                    if abs(vector_to_cmp[0] - vector[0]) <= pixels_threshold:
+                        counts += 1
+            counts_of_similar_vectors[i] = counts
+
+        # move vectors after having being filtered by the similarity of the
+        # first elements.
+        first_elem_filtered_mv_vectors = []
+        for i in range(len(sorted_mv_list)):
+            counts = counts_of_similar_vectors[i]
+            if counts >= threshold_similar_vectors:
+                first_elem_filtered_mv_vectors.append(sorted_mv_list[i])
+
+        # After filtering the vectors by its first element, a new filter will
+        # be applied, filtering the move vectors by its second element.
+        sorted_mv_list = sorted(first_elem_filtered_mv_vectors,
+                                key=itemgetter(1))
+
+        len_filtered_vectors = len(sorted_mv_list)
+        threshold_similar_vectors = threshold_similarity * len_filtered_vectors
+        counts_of_similar_vectors = len_filtered_vectors*[0]
+
+        sorted_mv_list[4] = [-21, 150]
+
+        for i in range(len(sorted_mv_list)):
+            vector = sorted_mv_list[i]
+            counts = 0
+            for j in range(len(sorted_mv_list)):
+                if i != j:
+                    # Vector to compare: vector_to_cmp
+                    vector_to_cmp = sorted_mv_list[j]
+                    if abs(vector_to_cmp[1] - vector[1]) <= pixels_threshold:
+                        counts += 1
+            counts_of_similar_vectors[i] = counts
+        # move vectors after having being filtered by the similarity of the
+        # first elements.
+        second_elem_filtered_mv_vectors = []
+        for i in range(len(sorted_mv_list)):
+            counts = counts_of_similar_vectors[i]
+            if counts >= threshold_similar_vectors:
+                second_elem_filtered_mv_vectors.append(sorted_mv_list[i])
+
+        # Finally, the average of the remaining move vectors after the
+        # filtering, is calculated.
+        mv_vectors = second_elem_filtered_mv_vectors
+        len_filtered_mv_vect = len(second_elem_filtered_mv_vectors)
+        np_total_mv_vector = np.array([0,0])
+        for i in range(len_filtered_mv_vect):
+            np_total_mv_vector += np.array(mv_vectors[i])
+
+        # average move vector after filtering
+        avg_mv_vector = np_total_mv_vector/float(len_filtered_mv_vect)
+        avg_mv_vector = np.around(avg_mv_vector)
+        avg_mv_vector = avg_mv_vector.astype(int)
+        print(avg_mv_vector)
+
+        return avg_mv_vector
+
+
+
+
     def tomo_subsequent_alignment(self):
 
         #################################################
@@ -119,6 +237,7 @@ class TomoSubsequentAlign(Alignment):
             proj2 = image_proj2[0, :, :]
 
             total_mv_vector = [0, 0]
+
             for vert in range(num_rois_vertical):
                 for horiz in range(num_rois_horizontal):
                     template = self.proj1[row_tem_from[vert]:
@@ -143,6 +262,21 @@ class TomoSubsequentAlign(Alignment):
                     roimove_vectors[vert][horiz] = mv_vector
                     total_mv_vector = total_mv_vector + mv_vector
 
+
+
+            avg_mv_vector = self.find_mv_vector_from_many_rois(roimove_vectors)
+            print("\n")
+
+
+
+
+
+
+
+
+
+
+
             # First we place the rows and then the columns
             # to be able to apply mv_projection.
             # Add one pixel for drift to rows for drift correction.
@@ -162,6 +296,38 @@ class TomoSubsequentAlign(Alignment):
             self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
             self.proj1 = proj2_moved
             self.counter = util_obj.count(self.counter)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         # From the middle image to the first image going backward.
         self.proj1 = self.image_proj1[0, :, :]
@@ -191,7 +357,10 @@ class TomoSubsequentAlign(Alignment):
                     top_left_move = (max_loc[0], max_loc[1])
                     mv_vector = self.find_mv_vector(top_left_base,
                                                     top_left_move)
+
+                    # Storing the ROI move vectors in a matrix
                     roimove_vectors[vert][horiz] = mv_vector
+
                     total_mv_vector = total_mv_vector + mv_vector
 
             # First we place the rows and then the columns
@@ -218,6 +387,10 @@ class TomoSubsequentAlign(Alignment):
         if self.printmv == 1:
             util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
+
         self.input_nexusfile.closedata()
         self.input_nexusfile.closegroup()
         self.input_nexusfile.close()
+
+
+
