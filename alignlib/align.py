@@ -69,8 +69,8 @@ class Alignment(object):
 
         self.counter = 0
 
-        self.width_tem = 300
-        self.height_tem = 500
+        self.width_tem = 100 #300
+        self.height_tem = 100 #500
 
         self.central_pixel_rows = 0
         self.central_pixel_cols = 0
