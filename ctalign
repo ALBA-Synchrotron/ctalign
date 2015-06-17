@@ -39,11 +39,18 @@ def main():
                         help='Option for allowing ROI selection. \n' +
                         'Default = 0')
     parser.add_argument('-x','--nroihoriz', type=int, default=1, 
-        help='Use multiple ROIs. Number of ROIs in horizontal direction. \n' +
-        'Default = 1')
+        help='Used for multiple ROIs: Number of ROIs " + '
+             'in horizontal direction. \n' +
+             'Default = 1')
     parser.add_argument('-y', '--nroivert', type=int, default=1, 
-        help='Use multiple ROIs. Number of ROIs in vertical direction. \n' +
+        help='Used for multiple ROIs: Number of ROIs in vertical direction. \n' +
                'Default = 1')
+    parser.add_argument('-ww', '--width', type=int, default=200,
+        help='Used for multiple ROIs: Width of ROI in pixels. \n' +
+               'Default = 200')
+    parser.add_argument('-hh', '--height', type=int, default=200,
+        help='Used for multiple ROIs: Height of ROI in pixels. \n' +
+               'Default = 200')
     parser.add_argument('-s', '--spectrum', type=int, default=0, 
         help='Align projections -s=0 || Align spectral images -s=1. \n' +
                'Default = 0')
@@ -68,7 +75,9 @@ def main():
                                              args.firstimg,
                                              args.printmv,
                                              args.nroihoriz,
-                                             args.nroivert)
+                                             args.nroivert,
+                                             args.width,
+                                             args.height)
         tomo_alignment.initialize_align()
         tomo_alignment.tomo_subsequent_alignment()
 
@@ -80,7 +89,9 @@ def main():
                                                          args.firstimg,
                                                          args.printmv,
                                                          args.nroihoriz,
-                                                         args.nroivert)
+                                                         args.nroivert,
+                                                         args.width,
+                                                         args.height)
             spectrum_alignment.initialize_align()
             spectrum_alignment.spectrum_subsequent_alignment()
 
@@ -91,7 +102,9 @@ def main():
                                                            args.firstimg,
                                                            args.printmv,
                                                            args.nroihoriz,
-                                                           args.nroivert)
+                                                           args.nroivert,
+                                                           args.width,
+                                                           args.height)
             spectrum_alignment.initialize_align()
             spectrum_alignment.spectrum_from_first_img_alignment()
 
@@ -102,7 +115,9 @@ def main():
                                                      args.firstimg,
                                                      args.printmv,
                                                      args.nroihoriz,
-                                                     args.nroivert)
+                                                     args.nroivert,
+                                                     args.width,
+                                                     args.height)
             spectrum_alignment.initialize_align()
             spectrum_alignment.spectrum_linear_alignment()
 

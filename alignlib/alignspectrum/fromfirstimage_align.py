@@ -28,11 +28,13 @@ from alignlib.utils import Utils
 class SpectrumFromFirstImgAlign(Alignment):
 
     def __init__(self, inputfile, roi_select, spec, firstimg, printmv,
-                 num_roi_horizontal, num_roi_vertical):
+                 num_roi_horizontal, num_roi_vertical, width, height):
         super(SpectrumFromFirstImgAlign, self).__init__(inputfile, roi_select,
                                                         spec, firstimg, printmv,
                                                         num_roi_horizontal,
-                                                        num_roi_vertical)
+                                                        num_roi_vertical,
+                                                        width,
+                                                        height)
 
     # Align using the first image as reference.
     def spectrum_from_first_img_alignment(self):

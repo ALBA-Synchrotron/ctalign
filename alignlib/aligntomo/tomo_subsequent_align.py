@@ -28,12 +28,14 @@ from alignlib.utils import Utils
 class TomoSubsequentAlign(Alignment):
 
     def __init__(self, inputfile, roi_select, spec, firstimg, printmv,
-                 num_roi_horizontal, num_roi_vertical):
+                 num_roi_horizontal, num_roi_vertical, width, height):
         super(TomoSubsequentAlign, self).__init__(inputfile,
                                                   roi_select, spec,
                                                   firstimg, printmv,
                                                   num_roi_horizontal,
-                                                  num_roi_vertical)
+                                                  num_roi_vertical,
+                                                  width,
+                                                  height)
 
     def find_mv_vector_from_many_rois(self, move_vectors_matrix):
         """Find move vector from many ROIs.

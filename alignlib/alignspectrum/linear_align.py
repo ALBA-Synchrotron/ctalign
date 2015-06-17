@@ -29,11 +29,13 @@ import cv2
 class SpectrumLinearAlign(Alignment):
 
     def __init__(self, inputfile, roi_select, spec, firstimg, printmv,
-                 num_roi_horizontal, num_roi_vertical):
+                 num_roi_horizontal, num_roi_vertical, width, height):
         super(SpectrumLinearAlign, self).__init__(inputfile, roi_select, spec,
                                                   firstimg, printmv,
                                                   num_roi_horizontal,
-                                                  num_roi_vertical)
+                                                  num_roi_vertical,
+                                                  width,
+                                                  height)
 
     def spectrum_linear_alignment(self):
 

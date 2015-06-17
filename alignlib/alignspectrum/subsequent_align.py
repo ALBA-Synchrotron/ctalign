@@ -28,11 +28,13 @@ from alignlib.utils import Utils
 class SpectrumSubsequentAlign(Alignment):
 
     def __init__(self, inputfile, roi_select, spec, firstimg, printmv,
-                 num_roi_horizontal, num_roi_vertical):
+                 num_roi_horizontal, num_roi_vertical, width, height):
         super(SpectrumSubsequentAlign, self).__init__(inputfile, roi_select,
                                                       spec, firstimg, printmv,
                                                       num_roi_horizontal,
-                                                      num_roi_vertical)
+                                                      num_roi_vertical,
+                                                      width,
+                                                      height)
 
     def spectrum_subsequent_alignment(self):
 

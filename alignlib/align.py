@@ -28,7 +28,7 @@ import os
 class Alignment(object):
     # Constructor of Alignment object ###
     def __init__(self, inputfile, roi_select, spec, firstimg, printmv,
-                 num_roi_horizontal, num_roi_vertical):
+                 num_roi_horizontal, num_roi_vertical, width, height):
 
         self.input_nexusfile = nxs.open(inputfile, 'r')
         self.outputfilehdf5 = inputfile.split('.hdf')[0] + '_ali' + '.hdf5'
@@ -72,8 +72,8 @@ class Alignment(object):
             self.width_tem = 300
             self.height_tem = 500
         else:
-            self.width_tem = 200
-            self.height_tem = 200
+            self.width_tem = width
+            self.height_tem = height
 
         self.central_pixel_rows = 0
         self.central_pixel_cols = 0
