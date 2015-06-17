@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-(C) Copyright 2014 Miquel Garriga 
+(C) Copyright 2014 Miquel Garriga
 (C) Copyright 2014 Marc Rosanes
 The program is distributed under the terms of the 
 GNU General Public License (or the Lesser GPL).

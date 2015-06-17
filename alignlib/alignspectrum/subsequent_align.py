@@ -2,7 +2,6 @@
 
 """
 (C) Copyright 2014 Marc Rosanes
-(C) Copyright 2014 Miquel Garriga
 The program is distributed under the terms of the
 GNU General Public License (or the Lesser GPL).
 

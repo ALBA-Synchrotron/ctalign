@@ -2,7 +2,6 @@
 
 """
 (C) Copyright 2014 Marc Rosanes
-(C) Copyright 2014 Miquel Garriga 
 The program is distributed under the terms of the 
 GNU General Public License (or the Lesser GPL).
 
@@ -69,8 +68,12 @@ class Alignment(object):
 
         self.counter = 0
 
-        self.width_tem = 100 #300
-        self.height_tem = 100 #500
+        if num_roi_horizontal == 1 and num_roi_vertical == 1:
+            self.width_tem = 300
+            self.height_tem = 500
+        else:
+            self.width_tem = 200
+            self.height_tem = 200
 
         self.central_pixel_rows = 0
         self.central_pixel_cols = 0
