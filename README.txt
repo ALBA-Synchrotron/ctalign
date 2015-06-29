@@ -45,10 +45,10 @@ less ROIs or take smaller ROIs automatically.
 
 - Look for the simetry in the image. ROIs should be choosen from the center
 to the top and to the bottom; and from the center to the left and to the 
-right. 
+right. DONE
 
 - Allow the user not only choose the number or ROIs, but also the size of 
-the ROIs (by giving some default values).
+the ROIs (by giving some default values). DONE
 
 - Filtering images in order to only take into account the most contrasted
 objects in the image. Apply the alignment after having the images filtered.
