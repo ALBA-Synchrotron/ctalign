@@ -11,12 +11,34 @@ parser.add_argument('normalized_hdf5', type=str,
                     of normalized projections.')
 parser.add_argument('-i', '--iterations', type=int, default=30, 
                     help='Iterations for tomo3d (default=30)')
+parser.add_argument('-r', '--roi', type=int, default=0, 
+                    help='Option for allowing ROI selection (default=0)')
+parser.add_argument('-x', '--nroihoriz', type=int, default=1, 
+                    help='Used for multiple ROIs: Number of ROIs in ' +
+                    'horizontal direction (default=1)')
+parser.add_argument('-y', '--nroivert', type=int, default=1, 
+                    help='Used for multiple ROIs: Number of ROIs in ' +
+                    'vertical direction (default=1)')
+parser.add_argument('-ww', '--width', type=int, default=200, 
+                    help='Used for multiple ROIs: Width of ROI in pixels.')
+parser.add_argument('-hh', '--height', type=int, default=200, 
+                    help='Used for multiple ROIs: Height of ROI in pixels.')
 
 args = parser.parse_args()
 
 norm_hdf5 = args.normalized_hdf5
 
-os.system('ctalign ' + norm_hdf5)
+if args.roi == 1:
+    print("User ROI choice")
+    os.system('ctalign ' + norm_hdf5 + " -r " + str(args.roi))
+elif args.nroihoriz != 1 or args.nroivert != 1:
+    print("Multiple ROIs")
+    os.system('ctalign ' + norm_hdf5 +
+              " -x " + str(args.nroihoriz) + " -y " + str(args.nroivert) +
+              " -ww " + str(args.width) + " -hh " + str(args.height))
+else:
+    print("Default execution")
+    os.system('ctalign ' + norm_hdf5)
 time.sleep(2)
 
 norm_name, fileExtension = os.path.splitext(norm_hdf5)
