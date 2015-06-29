@@ -76,10 +76,6 @@ class TomoSubsequentAlign(Alignment):
 
         # We sort the mv_vectors list by its first element
         sorted_mv_list = sorted(mv_list)
-
-        print("\nSorted full vector list")
-        print(sorted_mv_list)
-
         len_mv_list = len(mv_list)
         threshold_similar_vectors = threshold_similarity * len_mv_list
 
@@ -122,9 +118,6 @@ class TomoSubsequentAlign(Alignment):
                         first_elem_filtered_mv_vectors.append(sorted_mv_list[i])
             else:
                 break
-
-        print("\nSorted first filtering vector list")
-        print(first_elem_filtered_mv_vectors)
 
         # After filtering the vectors by its first element, a new filter will
         # be applied, filtering the move vectors by its second element.
@@ -169,9 +162,6 @@ class TomoSubsequentAlign(Alignment):
             else:
                 break
 
-        print("\nSorted second filtering vector list")
-        print(second_elem_filtered_mv_vectors)
-
         # Finally, the average of the remaining move vectors after the
         # filtering, is calculated.
         mv_vectors = second_elem_filtered_mv_vectors
@@ -184,8 +174,6 @@ class TomoSubsequentAlign(Alignment):
         avg_mv_vector = np_total_mv_vector/float(len_filtered_mv_vect)
         avg_mv_vector = np.around(avg_mv_vector)
         avg_mv_vector = avg_mv_vector.astype(int)
-        print(avg_mv_vector)
-
         return avg_mv_vector
 
     def tomo_subsequent_alignment(self):
