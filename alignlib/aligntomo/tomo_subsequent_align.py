@@ -217,7 +217,7 @@ class TomoSubsequentAlign(Alignment):
             self.height_tem = self.roi_points[1][1] - self.roi_points[0][1]
             # Rows: Second coordinate from first point (cv2)
             origin_pixel_rows = self.roi_points[0][1]
-            # Cols: First coordinate from second point (cv2)
+            # Cols: First coordinate from first point (cv2)
             origin_pixel_cols = self.roi_points[0][0]
         else:
             origin_pixel_rows = self.central_pixel_rows - self.height_tem/2
@@ -292,10 +292,6 @@ class TomoSubsequentAlign(Alignment):
 
             # First we place the rows and then the columns
             # to be able to apply mv_projection.
-            # Add one pixel for drift to rows for drift correction.
-            # rows = total_mv_vector[1]/(num_rois_vertical*num_rois_horizontal)
-            # cols = total_mv_vector[0]/(num_rois_vertical*num_rois_horizontal)
-
             rows = avg_mv_vector[1]
             cols = avg_mv_vector[0]
             avg_move_vector = [rows, cols]
@@ -355,9 +351,6 @@ class TomoSubsequentAlign(Alignment):
 
             # First we place the rows and then the columns
             # to be able to apply mv_projections.
-            # Add one pixel for drift to rows for drift correction.
-            # rows = total_mv_vector[1]/(num_rois_vertical*num_rois_horizontal)
-            # cols = total_mv_vector[0]/(num_rois_vertical*num_rois_horizontal)
             rows = avg_mv_vector[1]
             cols = avg_mv_vector[0]
             avg_move_vector = [rows, cols]
