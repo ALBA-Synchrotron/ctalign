@@ -36,16 +36,18 @@ class SpectrumSubsequentAlign(Alignment):
                                                       width,
                                                       height)
 
+    # Align using as reference the immediate precedent image at each time.
+    # The starting image used as reference is the first image of the stack.
     def spectrum_subsequent_alignment(self):
 
         #################################################
         #  Get align and store aligned images in HDF5  ##
         #################################################
         self.input_nexusfile.opendata('spectroscopy_normalized')
-
         img_num = 0
+
         self.image_proj1 = self.get_single_image(img_num)
-        self.proj1 = self.image_proj1[0, :, :]
+        self.proj1_roi_selection = self.image_proj1[0, :, :]
 
         slab_offset = [img_num, 0, 0]
         self.nxsfield = self.align[self.data_nxs]
@@ -55,19 +57,37 @@ class SpectrumSubsequentAlign(Alignment):
         self.central_pixel_rows = int(self.numrows / 2)
         self.central_pixel_cols = int(self.numcols / 2)
 
-        self.row_tem_from = self.central_pixel_rows - self.height_tem / 2
-        self.row_tem_to = self.central_pixel_rows + self.height_tem / 2
-        self.col_tem_from = self.central_pixel_cols - self.width_tem / 2
-        self.col_tem_to = self.central_pixel_cols + self.width_tem / 2
+        if self.user_roi_select == 1:
+            # If ROI is selected by the user, a single ROI must be used
+            # Do not modify this numbers
+
+            self.roi_selection(self.proj1_roi_selection, spectrum=1)
+            self.width_tem = self.roi_points[1][0] - self.roi_points[0][0]
+            self.height_tem = self.roi_points[1][1] - self.roi_points[0][1]
+            # Rows: Second coordinate from first point (cv2)
+            origin_pixel_rows = self.roi_points[0][1]
+            # Cols: First coordinate from second point (cv2)
+            origin_pixel_cols = self.roi_points[0][0]
+        else:
+            origin_pixel_rows = self.central_pixel_rows - self.height_tem/2
+            origin_pixel_cols = self.central_pixel_cols - self.width_tem/2
+
+        # Template zones
+        self.col_tem_from = origin_pixel_cols
+        self.row_tem_from = origin_pixel_rows
+        self.row_tem_to = origin_pixel_rows + self.height_tem
+        self.col_tem_to = origin_pixel_cols + self.width_tem
 
         # In openCV first we indicate the columns and then the rows.
         self.top_left_base = (self.col_tem_from, self.row_tem_from)
         print('Initialization completed')
 
-        print("Align spectroscopic images regarding the precedent image")
+        print("Align spectroscopic images regarding the first image")
         util_obj = Utils()
         self.counter = 0
-        for numimg in range(img_num, self.nFrames):
+
+        self.proj1 = self.image_proj1[0, :, :]
+        for numimg in range(img_num+1, self.nFrames):
             # proj2 is the base image in which we will map the template
             image_proj2 = self.get_single_image(numimg)
             proj2 = image_proj2[0, :, :]
@@ -81,7 +101,6 @@ class SpectrumSubsequentAlign(Alignment):
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
             top_left_move = max_loc
-
             move_vector = self.find_mv_vector(self.top_left_base, top_left_move)
             mv_vector = [move_vector[1], move_vector[0]]
             self.mv_vector_list.append(mv_vector)
@@ -103,3 +122,4 @@ class SpectrumSubsequentAlign(Alignment):
         self.input_nexusfile.closedata()
         self.input_nexusfile.closegroup()
         self.input_nexusfile.close()
+
