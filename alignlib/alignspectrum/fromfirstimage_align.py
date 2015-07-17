@@ -43,23 +43,39 @@ class SpectrumFromFirstImgAlign(Alignment):
         #  Get align and store aligned images in HDF5  ##
         #################################################
         self.input_nexusfile.opendata('spectroscopy_normalized')
-        self.central_img_num = 0
+        reference_img_num = 0
 
-        self.image_proj1 = self.get_single_image(self.central_img_num)
-        self.proj1 = self.image_proj1[0, :, :]
+        self.image_proj1 = self.get_single_image(reference_img_num)
+        self.proj1_roi_selection = self.image_proj1[0, :, :]
 
-        slab_offset = [self.central_img_num, 0, 0]
+        slab_offset = [reference_img_num, 0, 0]
         self.nxsfield = self.align[self.data_nxs]
         self.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
-        print('Initial reference image (%d) stored\n' % self.central_img_num)
+        print('Initial reference image (%d) stored\n' % reference_img_num)
 
         self.central_pixel_rows = int(self.numrows / 2)
         self.central_pixel_cols = int(self.numcols / 2)
 
-        self.row_tem_from = self.central_pixel_rows - self.height_tem / 2
-        self.row_tem_to = self.central_pixel_rows + self.height_tem / 2
-        self.col_tem_from = self.central_pixel_cols - self.width_tem / 2
-        self.col_tem_to = self.central_pixel_cols + self.width_tem / 2
+        if self.user_roi_select == 1:
+            # If ROI is selected by the user, a single ROI must be used
+            # Do not modify this numbers
+
+            self.roi_selection(self.proj1_roi_selection, spectrum=1)
+            self.width_tem = self.roi_points[1][0] - self.roi_points[0][0]
+            self.height_tem = self.roi_points[1][1] - self.roi_points[0][1]
+            # Rows: Second coordinate from first point (cv2)
+            origin_pixel_rows = self.roi_points[0][1]
+            # Cols: First coordinate from second point (cv2)
+            origin_pixel_cols = self.roi_points[0][0]
+        else:
+            origin_pixel_rows = self.central_pixel_rows - self.height_tem/2
+            origin_pixel_cols = self.central_pixel_cols - self.width_tem/2
+
+        # Template zones
+        self.col_tem_from = origin_pixel_cols
+        self.row_tem_from = origin_pixel_rows
+        self.row_tem_to = origin_pixel_rows + self.height_tem
+        self.col_tem_to = origin_pixel_cols + self.width_tem
 
         # In openCV first we indicate the columns and then the rows.
         self.top_left_base = (self.col_tem_from, self.row_tem_from)
@@ -68,10 +84,12 @@ class SpectrumFromFirstImgAlign(Alignment):
         print("Align spectroscopic images regarding the first image")
         util_obj = Utils()
         self.counter = 0
+
+        self.proj1 = self.image_proj1[0, :, :]
         template = self.proj1[self.row_tem_from:self.row_tem_to,
                               self.col_tem_from:self.col_tem_to]
 
-        for numimg in range(self.central_img_num+1, self.nFrames):
+        for numimg in range(reference_img_num+1, self.nFrames):
             # proj2 is the base image in which we will map the template
             image_proj2 = self.get_single_image(numimg)
             proj2 = image_proj2[0, :, :]

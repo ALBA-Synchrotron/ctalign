@@ -110,13 +110,17 @@ class Alignment(object):
         nxsfield.put(image, slab_offset, refresh=False)
         nxsfield.write()
 
-    def roi_selection(self, img_for_roi_select):
+    def roi_selection(self, img_for_roi_select, spectrum=0):
 
         cv2.startWindowThread()
 
         # Rescale the image grayscale colors in order to make it visible
-        mult_factor = 1 / img_for_roi_select.max()
-        img_for_roi_select = mult_factor * img_for_roi_select
+        if spectrum == 0:
+            mult_factor = 1 / img_for_roi_select.max()
+            img_for_roi_select = mult_factor * img_for_roi_select
+        else:
+            ret, img_for_roi_select = cv2.threshold(img_for_roi_select,
+                                                    1,0,cv2.THRESH_TOZERO_INV)
 
         window_name = "projection_for_roi_selection"
 
@@ -144,11 +148,11 @@ class Alignment(object):
             cv2.imshow(window_name, img_for_roi_select)
             key = cv2.waitKey(1) & 0xFF
 
-            # if the 'r' key is pressed, reset the selected region
-            if key == 27:  # Esc key to stop
+            # Esc key to stop
+            if key == 27:
                 import sys
-
                 sys.exit()
+            # if the 'r' key is pressed, reset the selected region
             elif key == ord("r"):
                 img_for_roi_select = clone.copy()
                 cv2.imshow(window_name, img_for_roi_select)
