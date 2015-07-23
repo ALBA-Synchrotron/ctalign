@@ -119,8 +119,18 @@ class Alignment(object):
             mult_factor = 1 / img_for_roi_select.max()
             img_for_roi_select = mult_factor * img_for_roi_select
         else:
-            ret, img_for_roi_select = cv2.threshold(img_for_roi_select,
-                                                    1,0,cv2.THRESH_TOZERO_INV)
+            img_without_borders = img_for_roi_select[int(self.numrows*0.15): 
+                                  self.numrows - int(self.numrows*0.07), 
+                                  int(self.numcols*0.15): 
+                                  self.numcols - int(self.numcols*0.07)] 
+
+            max_pixel_img = np.amax(img_without_borders)
+            min_pixel_img = np.amin(img_without_borders)
+            factor_feature_matching = (1.0/(max_pixel_img - \
+                                            min_pixel_img))
+
+            img_for_roi_select = ((img_for_roi_select - min_pixel_img) * \
+                                (factor_feature_matching)*255).astype(np.uint8) 
 
         window_name = "projection_for_roi_selection"
 
