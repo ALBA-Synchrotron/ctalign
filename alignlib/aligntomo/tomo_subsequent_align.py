@@ -69,10 +69,8 @@ class TomoSubsequentAlign(Alignment):
         if self.user_roi_select == 1:
             # If ROI is selected by the user, a single ROI must be used
             # Do not modify this numbers
-            __num_rois_vertical = 1
-            __num_rois_horizontal = 1
-            num_rois_vertical = __num_rois_vertical
-            num_rois_horizontal = __num_rois_horizontal
+            num_rois_vertical = 1
+            num_rois_horizontal = 1
             self.roi_selection(self.proj1_roi_selection)
             self.width_tem = self.roi_points[1][0] - self.roi_points[0][0]
             self.height_tem = self.roi_points[1][1] - self.roi_points[0][1]
@@ -92,6 +90,7 @@ class TomoSubsequentAlign(Alignment):
         w = self.width_tem
         h = self.height_tem
 
+        # Matrix for storing the raw move vectors of all ROIs
         roimove_vectors = np.zeros((num_rois_vertical,
                                     num_rois_horizontal, 2), dtype=int)
         # Template zones
@@ -119,8 +118,6 @@ class TomoSubsequentAlign(Alignment):
             image_proj2 = self.get_single_image(numimg)
             proj2 = image_proj2[0, :, :]
 
-            total_mv_vector = [0, 0]
-
             for vert in range(num_rois_vertical):
                 for horiz in range(num_rois_horizontal):
                     template = self.proj1[row_tem_from[vert]:
@@ -143,7 +140,6 @@ class TomoSubsequentAlign(Alignment):
                                                     top_left_move)
 
                     roimove_vectors[vert][horiz] = mv_vector
-                    #total_mv_vector = total_mv_vector + mv_vector
 
             if num_rois_horizontal == 1 and num_rois_vertical == 1:
                 avg_mv_vector = mv_vector
@@ -178,7 +174,6 @@ class TomoSubsequentAlign(Alignment):
             image_proj2 = self.get_single_image(numimg)
             proj2 = image_proj2[0, :, :]
 
-            total_mv_vector = [0, 0]
             for vert in range(num_rois_vertical):
                 for horiz in range(num_rois_horizontal):
                     template = self.proj1[row_tem_from[vert]:
@@ -202,8 +197,6 @@ class TomoSubsequentAlign(Alignment):
                     # Storing the ROI move vectors in a matrix
                     roimove_vectors[vert][horiz] = mv_vector
 
-                    #total_mv_vector = total_mv_vector + mv_vector
-
             if num_rois_horizontal == 1 and num_rois_vertical == 1:
                 avg_mv_vector = mv_vector
             else:
@@ -216,21 +209,18 @@ class TomoSubsequentAlign(Alignment):
             cols = avg_mv_vector[0]
             avg_move_vector = [rows, cols]
 
-            zeros_img = np.zeros((self.numrows, self.numcols),
-                                 dtype='float32')
-            proj2_moved = self.mv_projection(zeros_img, proj2,
-                                            avg_move_vector)
-            proj2 = np.zeros([1, self.numrows, self.numcols],
-                             dtype='float32')
+            zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
+            proj2_moved = self.mv_projection(zeros_img, proj2, avg_move_vector)
+            proj2 = np.zeros([1, self.numrows, self.numcols],  dtype='float32')
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
             self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
             self.proj1 = proj2_moved
 
-            self.mv_vector_list.append(avg_move_vector)
             self.counter = util_obj.count(self.counter)
 
         if self.printmv == 1:
+            self.mv_vector_list.append(avg_move_vector)
             util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
         self.input_nexusfile.closedata()
