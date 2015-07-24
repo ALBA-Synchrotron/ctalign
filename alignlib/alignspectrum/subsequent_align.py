@@ -165,7 +165,7 @@ class SpectrumSubsequentAlign(Alignment):
             self.counter = util_obj.count(self.counter)
 
         if self.printmv == 1:
-            self.mv_vector_list.append(mv_vector)
+            self.mv_vector_list.append(avg_mv_vector)
             util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
         self.input_nexusfile.closedata()
