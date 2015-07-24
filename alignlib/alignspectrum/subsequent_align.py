@@ -105,7 +105,7 @@ class SpectrumSubsequentAlign(Alignment):
 
         # In openCV first we indicate the columns and then the rows.
         print('Initialization completed')
-        print("Align spectroscopic images regarding the first image")
+        print("Align spectroscopic images regarding the previous image")
         util_obj = Utils()
         self.counter = 0
 
