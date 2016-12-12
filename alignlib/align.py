@@ -460,20 +460,23 @@ class Alignment(object):
         if self.spec == 0:
             try:
                 angles_file = self.path + "/angles.tlt"
-                f = open(angles_file, 'w')
-                for i in range(len(self.angles)):
-                    angle_str = str(round(self.angles[i], 2))
-                    if len(angle_str) == 5:
-                        f.write(" " + angle_str)
-                    elif len(angle_str) == 4:
-                        f.write("  " + angle_str)
-                    elif len(angle_str) == 3:
-                        f.write("   " + angle_str)
-                    elif len(angle_str) == 2:
-                        f.write("    " + angle_str)
-                    f.write("\n")
-                f.close()
-                print("Angles have been stored")
+                from os import path 
+                file_exists = path.isfile(angles_file)
+                if not file_exists:
+                    f = open(angles_file, 'w')
+                    for i in range(len(self.angles)):
+                        angle_str = str(round(self.angles[i], 2))
+                        if len(angle_str) == 5:
+                            f.write(" " + angle_str)
+                        elif len(angle_str) == 4:
+                            f.write("  " + angle_str)
+                        elif len(angle_str) == 3:
+                            f.write("   " + angle_str)
+                        elif len(angle_str) == 2:
+                            f.write("    " + angle_str)
+                        f.write("\n")
+                    f.close()
+                    print("Angles have been stored")
             except:
                 print("\nError in saving angles in a .tlt file.\n")
 
