@@ -158,11 +158,16 @@ class SpectrumFromFirstImgAlign(Alignment):
             self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
 
             self.counter = util_obj.count(self.counter)
+            self.mv_vector_list.append(avg_mv_vector)
 
         if self.printmv == 1:
-            self.mv_vector_list.append(avg_mv_vector)
             util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
+        self.align['move_vectors'] = self.mv_vector_list
+        self.align['move_vectors'].write()
+       
         self.input_nexusfile.closedata()
         self.input_nexusfile.closegroup()
         self.input_nexusfile.close()
+
+
