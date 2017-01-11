@@ -62,6 +62,8 @@ def main():
     parser.add_argument('-m', '--printmv', type=int, default=0, 
                         help='Print move vectors between images. \n' +
                         'Default = 0')
+    parser.add_argument('-j', '--rmjumpshdf', type=str, default=None,
+        help='Enter hdf5 file containing the aligned spectroscopy')
     args = parser.parse_args()
 
     print("\nAligning images\n")
@@ -81,7 +83,7 @@ def main():
         tomo_alignment.initialize_align()
         tomo_alignment.tomo_subsequent_alignment()
 
-    elif args.spectrum == 1:
+    elif (args.spectrum == 1 and args.rmjumps == None):
         if args.firstimg == 0:
             spectrum_alignment = SpectrumSubsequentAlign(args.inputfile,
                                                          args.roi,
@@ -120,6 +122,14 @@ def main():
                                                      args.height)
             spectrum_alignment.initialize_align()
             spectrum_alignment.spectrum_linear_alignment()
+
+    elif (args.spectrum == 1 and args.rmjumps != None):
+            post_alignment = PostAlignRemoveJumps(args.inputfile,
+                                                  args.rmjumpshdf)
+
+
+
+
 
     print("\nImages aligned\n\n")
 
