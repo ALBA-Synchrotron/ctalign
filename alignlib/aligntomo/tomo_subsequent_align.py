@@ -217,7 +217,8 @@ class TomoSubsequentAlign(Alignment):
             avg_move_vector = [rows, cols]
 
             zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
-            proj2_moved = self.mv_projection(zeros_img, proj2, avg_move_vector)
+            proj2_moved = self.util_obj.mv_projection(zeros_img, proj2, 
+                                                      avg_move_vector)
             proj2 = np.zeros([1, self.numrows, self.numcols],  dtype='float32')
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
