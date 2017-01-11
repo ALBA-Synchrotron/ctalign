@@ -19,33 +19,32 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import cv2
+import nxs
 import numpy as np
-from alignlib.align import Alignment
 from alignlib.utils import Utils
 
 
 class PostAlignRemoveJumps():
 
     def __init__(self, normalizedfile, alignfile):
+
         util_obj = Utils()
         print(alignfile)
         print(normalizedfile)
 
-        self.normalized_nexusfile = nxs.open(inputfile, 'r')
-        self.aligned_nexusfile = nxs.open(inputfile, 'r')
+        self.normalized_nexusfile = nxs.open(normalizedfile, 'r')
+        self.aligned_nexusfile = nxs.open(alignfile, 'r')
 
-
-        if self.spec == 0:
-            self.input_nexusfile.opengroup('TomoNormalized')
-        elif self.spec == 1:
-            self.input_nexusfile.opengroup('SpecNormalized')
-
-        dataset_name = 'mv_vectors'
         try:
-            self.input_nexusfile.opendata(dataset_name)
-            self.mv_vectors = self.input_nexusfile.getdata()
-            self.input_nexusfile.closedata()
+            self.aligned_nexusfile.opengroup('FastAligned')
+        except:
+            self.aligned_nexusfile.opengroup('FastAligned')
+
+        dataset_name = 'move_vectors'
+        try:
+            self.aligned_nexusfile.opendata(dataset_name)
+            self.mv_vectors = self.aligned_nexusfile.getdata()
+            self.aligned_nexusfile.closedata()
         except: 
             print("\nMove vectors could NOT be found.\n")
             return
