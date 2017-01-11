@@ -40,10 +40,9 @@ class Utils:
         return counter
 
     # Get image
-    def get_single_image(self, numimg):
-        image_retrieved = self.input_nexusfile.getslab([numimg, 0, 0],
-                                                       [1, self.numrows,
-                                                        self.numcols])
+    def get_single_image(self, input_nexus_file, numimg, numrows, numcols):
+        image_retrieved = input_nexus_file.getslab([numimg, 0, 0],
+                                                   [1, numrows, numcols])
         return image_retrieved
 
     # Store image in hdf5 file

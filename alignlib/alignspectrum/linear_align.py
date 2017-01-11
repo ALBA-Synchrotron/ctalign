@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
 from alignlib.align import Alignment
-from alignlib.utils import Utils
 import cv2
 
 
@@ -44,8 +43,10 @@ class SpectrumLinearAlign(Alignment):
         #################################################
         self.input_nexusfile.opendata('spectroscopy_normalized')
         img_num = 0
-
-        self.image_proj1 = self.util_obj.get_single_image(img_num )
+        self.image_proj1 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                          img_num,
+                                                          self.numrows,
+                                                          self.numcols)
         self.proj1 = self.image_proj1[0, :, :]
         # cv2.imshow('proj1',proj1)
         # cv2.waitKey(0)
@@ -73,7 +74,10 @@ class SpectrumLinearAlign(Alignment):
                "to row", self.row_tem_to, "col", self.col_tem_to)
         template = self.proj1[self.row_tem_from:self.row_tem_to,
                          self.col_tem_from:self.col_tem_to]
-        image_proj2 = self.util_obj.get_single_image(self.nFrames-1)
+        image_proj2 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                     self.nFrames-1,
+                                                     self.numrows,
+                                                     self.numcols)
         proj2 = image_proj2[0, :, :]
         #toalignroi=proj2[self.row_tem_from:self.row_tem_to,
         #                 self.col_tem_from:self.col_tem_to]
@@ -159,7 +163,10 @@ class SpectrumLinearAlign(Alignment):
 
         self.counter = 0
         for numimg in range(1,self.nFrames):
-            image_proj2 = self.util_obj.get_single_image(numimg)
+            image_proj2 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                         numimg,
+                                                         self.numrows,
+                                                         self.numcols)
             proj2 = image_proj2[0, :, :]
             if False: # case A
                 mv_vector = [yshift[numimg],xshift[numimg]]

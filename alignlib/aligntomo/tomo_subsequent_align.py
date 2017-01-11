@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import cv2
 import numpy as np
 from alignlib.align import Alignment
-from alignlib.utils import Utils
 
 
 class TomoSubsequentAlign(Alignment):
@@ -46,7 +45,10 @@ class TomoSubsequentAlign(Alignment):
         self.input_nexusfile.opendata('TomoNormalized')
         self.central_img_num = int(self.nFrames) / 2
 
-        self.image_proj1 = self.util_obj.get_single_image(self.central_img_num)
+        self.image_proj1 = self.util_obj.get_single_image(self.input_nexusfile, 
+                                                          self.central_img_num, 
+                                                          self.numrows,
+                                                          self.numcols)
         self.proj1_roi_selection = self.image_proj1[0, :, :]
         # cv2.imshow('proj1',proj1)
         # cv2.waitKey(0)
@@ -114,7 +116,10 @@ class TomoSubsequentAlign(Alignment):
         for numimg in range(self.central_img_num+1, self.nFrames):
             # proj2 is the image in which we will map the template issued
             # from self.proj1
-            image_proj2 = self.util_obj.get_single_image(numimg)
+            image_proj2 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                         numimg,
+                                                         self.numrows,
+                                                         self.numcols)
             proj2 = image_proj2[0, :, :]
 
             for vert in range(num_rois_vertical):
@@ -170,7 +175,10 @@ class TomoSubsequentAlign(Alignment):
         for numimg in xrange(self.central_img_num-1, -1, -1):
             # proj2 is the image in which we will map the template issued
             # from proj1
-            image_proj2 = self.util_obj.get_single_image(numimg)
+            image_proj2 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                         numimg,
+                                                         self.numrows,
+                                                         self.numcols)
             proj2 = image_proj2[0, :, :]
 
             for vert in range(num_rois_vertical):

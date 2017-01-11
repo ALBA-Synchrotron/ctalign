@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import cv2
 import numpy as np
 from alignlib.align import Alignment
-from alignlib.utils import Utils
 
 
 class SpectrumSubsequentAlign(Alignment):
@@ -46,12 +45,16 @@ class SpectrumSubsequentAlign(Alignment):
         self.input_nexusfile.opendata('spectroscopy_normalized')
         img_num = 0
 
-        self.image_proj1 = self.util_obj.get_single_image(img_num)
+        self.image_proj1 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                          img_num,
+                                                          self.numrows,
+                                                          self.numcols)
         self.proj1_roi_selection = self.image_proj1[0, :, :]
 
         slab_offset = [img_num, 0, 0]
         self.nxsfield = self.align[self.data_nxs]
-        self.util_obj.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
+        self.util_obj.store_image_in_hdf(self.image_proj1, self.nxsfield, 
+                                         slab_offset)
         print('Initial reference image (%d) stored\n' % img_num)
 
         self.central_pixel_rows = int(self.numrows / 2)
@@ -110,7 +113,10 @@ class SpectrumSubsequentAlign(Alignment):
         self.proj1 = self.image_proj1[0, :, :]
         for numimg in range(img_num+1, self.nFrames):
             # proj2 is the base image in which we will map the template
-            image_proj2 = self.util_obj.get_single_image(numimg)
+            image_proj2 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                         numimg,
+                                                         self.numrows,
+                                                         self.numcols)
             proj2 = image_proj2[0, :, :]
 
             for vert in range(num_rois_vertical):

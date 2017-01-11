@@ -32,10 +32,11 @@ from alignlib.alignspectrum.post_align import PostAlignRemoveJumps
 
 def main():
     parser = argparse.ArgumentParser(
-                        description="Align the tomography projections \n")
+                        description="Align the images \n")
 
     parser.add_argument('inputfile', type=str, default=None,
-        help='Enter hdf5 file containing the normalized tomography')
+        help='Enter hdf5 file containing the normalized tomography or '
+              + 'spectroscopy')
     parser.add_argument('-r', '--roi', type=int, default=0, 
                         help='Option for allowing ROI selection. \n' +
                         'Default = 0')

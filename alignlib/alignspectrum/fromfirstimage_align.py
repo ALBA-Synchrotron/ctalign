@@ -22,7 +22,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import cv2
 import numpy as np
 from alignlib.align import Alignment
-from alignlib.utils import Utils
 
 
 class SpectrumFromFirstImgAlign(Alignment):
@@ -45,7 +44,10 @@ class SpectrumFromFirstImgAlign(Alignment):
         self.input_nexusfile.opendata('spectroscopy_normalized')
         reference_img_num = 0
 
-        self.image_proj1 = self.util_obj.get_single_image(reference_img_num)
+        self.image_proj1 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                          reference_img_num,
+                                                          self.numrows,
+                                                          self.numcols)
         self.proj1_roi_selection = self.image_proj1[0, :, :]
 
         slab_offset = [reference_img_num, 0, 0]
@@ -110,7 +112,10 @@ class SpectrumFromFirstImgAlign(Alignment):
         # In openCV first we indicate the columns and then the rows.
         for numimg in range(reference_img_num+1, self.nFrames):
             # proj2 is the base image in which we will map the template
-            image_proj2 = self.util_obj.get_single_image(numimg)
+            image_proj2 = self.util_obj.get_single_image(self.input_nexusfile,
+                                                         numimg,
+                                                         self.numrows,
+                                                         self.numcols)
             proj2 = image_proj2[0, :, :]
 
             for vert in range(num_rois_vertical):
