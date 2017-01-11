@@ -38,3 +38,58 @@ class Utils:
         if counter % 10 == 0:
             print(".")
         return counter
+
+    # Get image
+    def get_single_image(self, numimg):
+        image_retrieved = self.input_nexusfile.getslab([numimg, 0, 0],
+                                                       [1, self.numrows,
+                                                        self.numcols])
+        return image_retrieved
+
+    # Store image in hdf5 file
+    def store_image_in_hdf(self, image, nxsfield, slab_offset):
+        nxsfield.put(image, slab_offset, refresh=False)
+        nxsfield.write()
+
+    # Move a projection #
+    def mv_projection(self, empty_img, proj_two, mv_vector):
+        rows = proj_two.shape[0]
+        cols = proj_two.shape[1]
+        mvr = abs(mv_vector[0])
+        mvc = abs(mv_vector[1])
+        ei = empty_img
+        pt = proj_two
+
+        if mv_vector[0] == 0 and mv_vector[1] == 0:
+            ei[:, :] = pt[:, :]
+
+        elif mv_vector[0] > 0 and mv_vector[1] == 0:
+            ei[mvr:rows, :] = pt[0:rows - mvr, :]
+
+        elif mv_vector[0] < 0 and mv_vector[1] == 0:
+            ei[0:rows - mvr, :] = pt[mvr:rows, :]
+
+        elif mv_vector[0] == 0 and mv_vector[1] > 0:
+            ei[:, mvc:cols] = pt[:, 0:cols - mvc]
+
+        elif mv_vector[0] == 0 and mv_vector[1] < 0:
+            ei[:, 0:cols - mvc] = pt[:, mvc:cols]
+
+        elif mv_vector[0] > 0 and mv_vector[1] > 0:
+            ei[mvr:rows, mvc:cols] = pt[0:rows - mvr, 0:cols - mvc]
+
+        elif mv_vector[0] > 0 and mv_vector[1] < 0:
+            ei[mvr:rows, 0:cols - mvc] = pt[0:rows - mvr, mvc:cols]
+
+        elif mv_vector[0] < 0 and mv_vector[1] > 0:
+            ei[0:rows - mvr, mvc:cols] = pt[mvr:rows, 0:cols - mvc]
+
+        elif mv_vector[0] < 0 and mv_vector[1] < 0:
+            ei[0:rows - mvr, 0:cols - mvc] = pt[mvr:rows, mvc:cols]
+
+        moved_proj_two = ei
+        # cv2.imshow('proj2mv',moved_proj_two)
+        # cv2.waitKey(0)
+        return moved_proj_two
+
+

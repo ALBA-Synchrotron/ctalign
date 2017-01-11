@@ -45,13 +45,13 @@ class SpectrumLinearAlign(Alignment):
         self.input_nexusfile.opendata('spectroscopy_normalized')
         img_num = 0
 
-        self.image_proj1 = self.get_single_image(img_num )
+        self.image_proj1 = self.util_obj.get_single_image(img_num )
         self.proj1 = self.image_proj1[0, :, :]
         # cv2.imshow('proj1',proj1)
         # cv2.waitKey(0)
         slab_offset = [img_num , 0, 0]
         self.nxsfield = self.align[self.data_nxs]
-        self.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
+        self.util_obj.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
         print('Initial reference image (%d) stored\n' % img_num )
 
         self.central_pixel_rows = int(self.numrows / 2)
@@ -73,7 +73,7 @@ class SpectrumLinearAlign(Alignment):
                "to row", self.row_tem_to, "col", self.col_tem_to)
         template = self.proj1[self.row_tem_from:self.row_tem_to,
                          self.col_tem_from:self.col_tem_to]
-        image_proj2 = self.get_single_image(self.nFrames-1)
+        image_proj2 = self.util_obj.get_single_image(self.nFrames-1)
         proj2 = image_proj2[0, :, :]
         #toalignroi=proj2[self.row_tem_from:self.row_tem_to,
         #                 self.col_tem_from:self.col_tem_to]
@@ -157,16 +157,16 @@ class SpectrumLinearAlign(Alignment):
                                        self.nFrames)).astype('int32')
         print np.vstack((xshift, yshift))
 
-        util_obj = Utils()
         self.counter = 0
         for numimg in range(1,self.nFrames):
-            image_proj2 = self.get_single_image(numimg)
+            image_proj2 = self.util_obj.get_single_image(numimg)
             proj2 = image_proj2[0, :, :]
             if False: # case A
                 mv_vector = [yshift[numimg],xshift[numimg]]
                 zeros_img = np.zeros((self.numrows, self.numcols), 
                                                         dtype='float32')
-                proj2_moved = self.mv_projection(zeros_img, proj2, mv_vector)
+                proj2_moved = self.util_obj.mv_projection(zeros_img, proj2, 
+                                                     mv_vector)
             else: # case B
                 proj2_moved = np.roll(np.roll(proj2, xshift[numimg], axis=1),
                                       yshift[numimg], axis=0)
@@ -175,8 +175,8 @@ class SpectrumLinearAlign(Alignment):
 
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
-            self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
-            self.counter = util_obj.count(self.counter)
+            self.util_obj.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
+            self.counter = self.util_obj.count(self.counter)
 
         self.input_nexusfile.closedata()
         self.input_nexusfile.closegroup()

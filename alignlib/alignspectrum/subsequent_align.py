@@ -46,12 +46,12 @@ class SpectrumSubsequentAlign(Alignment):
         self.input_nexusfile.opendata('spectroscopy_normalized')
         img_num = 0
 
-        self.image_proj1 = self.get_single_image(img_num)
+        self.image_proj1 = self.util_obj.get_single_image(img_num)
         self.proj1_roi_selection = self.image_proj1[0, :, :]
 
         slab_offset = [img_num, 0, 0]
         self.nxsfield = self.align[self.data_nxs]
-        self.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
+        self.util_obj.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
         print('Initial reference image (%d) stored\n' % img_num)
 
         self.central_pixel_rows = int(self.numrows / 2)
@@ -106,13 +106,11 @@ class SpectrumSubsequentAlign(Alignment):
         # In openCV first we indicate the columns and then the rows.
         print('Initialization completed')
         print("Align spectroscopic images regarding the previous image")
-        util_obj = Utils()
         self.counter = 0
-
         self.proj1 = self.image_proj1[0, :, :]
         for numimg in range(img_num+1, self.nFrames):
             # proj2 is the base image in which we will map the template
-            image_proj2 = self.get_single_image(numimg)
+            image_proj2 = self.util_obj.get_single_image(numimg)
             proj2 = image_proj2[0, :, :]
 
             for vert in range(num_rois_vertical):
@@ -153,20 +151,20 @@ class SpectrumSubsequentAlign(Alignment):
             # Move the projection thanks to the found move vector
             zeros_img = np.zeros((self.numrows, self.numcols),
                                  dtype='float32')
-            proj2_moved = self.mv_projection(zeros_img, proj2, avg_mv_vector)
-
+            proj2_moved = self.util_obj.mv_projection(zeros_img, proj2, 
+                                                      avg_mv_vector)
             proj2 = np.zeros([1, self.numrows, self.numcols],
                              dtype='float32')
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
-            self.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
+            self.util_obj.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
             self.proj1 = proj2_moved
 
-            self.counter = util_obj.count(self.counter)
+            self.counter = self.util_obj.count(self.counter)
             self.mv_vector_list.append(avg_mv_vector)
 
         if self.printmv == 1:
-            util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
+            self.util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
         self.align['move_vectors'] = self.mv_vector_list
         self.align['move_vectors'].write()

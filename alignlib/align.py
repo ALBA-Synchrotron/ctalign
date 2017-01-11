@@ -23,7 +23,7 @@ import numpy as np
 import nxs
 import cv2
 import os
-
+from alignlib.utils import Utils
 
 class Alignment(object):
     # Constructor of Alignment object ###
@@ -46,6 +46,7 @@ class Alignment(object):
         self.align = nxs.NXentry(name="FastAligned")
         self.align.save(self.outputfilehdf5, 'w5')
 
+        self.util_obj = Utils()
         self.method = eval('cv2.TM_CCOEFF_NORMED')
         # self.method = eval('cv2.TM_CCORR_NORMED')
 
@@ -96,18 +97,6 @@ class Alignment(object):
             self.mv_vect_filename = inputfile.split('.hdf')[
                                         0] + '_shift' + '.txt'
         return
-
-    # Get image
-    def get_single_image(self, numimg):
-        image_retrieved = self.input_nexusfile.getslab([numimg, 0, 0],
-                                                       [1, self.numrows,
-                                                        self.numcols])
-        return image_retrieved
-
-    # Save image
-    def store_image_in_hdf(self, image, nxsfield, slab_offset):
-        nxsfield.put(image, slab_offset, refresh=False)
-        nxsfield.write()
 
     def roi_selection(self, img_for_roi_select, spectrum=0):
 
@@ -318,47 +307,6 @@ class Alignment(object):
         avg_mv_vector = np.around(avg_mv_vector)
         avg_mv_vector = avg_mv_vector.astype(int)
         return avg_mv_vector
-
-    # Move a projection #
-    def mv_projection(self, empty_img, proj_two, mv_vector):
-        rows = proj_two.shape[0]
-        cols = proj_two.shape[1]
-        mvr = abs(mv_vector[0])
-        mvc = abs(mv_vector[1])
-        ei = empty_img
-        pt = proj_two
-
-        if mv_vector[0] == 0 and mv_vector[1] == 0:
-            ei[:, :] = pt[:, :]
-
-        elif mv_vector[0] > 0 and mv_vector[1] == 0:
-            ei[mvr:rows, :] = pt[0:rows - mvr, :]
-
-        elif mv_vector[0] < 0 and mv_vector[1] == 0:
-            ei[0:rows - mvr, :] = pt[mvr:rows, :]
-
-        elif mv_vector[0] == 0 and mv_vector[1] > 0:
-            ei[:, mvc:cols] = pt[:, 0:cols - mvc]
-
-        elif mv_vector[0] == 0 and mv_vector[1] < 0:
-            ei[:, 0:cols - mvc] = pt[:, mvc:cols]
-
-        elif mv_vector[0] > 0 and mv_vector[1] > 0:
-            ei[mvr:rows, mvc:cols] = pt[0:rows - mvr, 0:cols - mvc]
-
-        elif mv_vector[0] > 0 and mv_vector[1] < 0:
-            ei[mvr:rows, 0:cols - mvc] = pt[0:rows - mvr, mvc:cols]
-
-        elif mv_vector[0] < 0 and mv_vector[1] > 0:
-            ei[0:rows - mvr, mvc:cols] = pt[mvr:rows, 0:cols - mvc]
-
-        elif mv_vector[0] < 0 and mv_vector[1] < 0:
-            ei[0:rows - mvr, 0:cols - mvc] = pt[mvr:rows, mvc:cols]
-
-        moved_proj_two = ei
-        # cv2.imshow('proj2mv',moved_proj_two)
-        # cv2.waitKey(0)
-        return moved_proj_two
 
     def store_currents(self):
         #############################################

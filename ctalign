@@ -28,6 +28,7 @@ from alignlib.alignspectrum.linear_align import SpectrumLinearAlign
 from alignlib.alignspectrum.subsequent_align import SpectrumSubsequentAlign
 from alignlib.alignspectrum.fromfirstimage_align import \
     SpectrumFromFirstImgAlign
+from alignlib.alignspectrum.post_align import PostAlignRemoveJumps
 
 def main():
     parser = argparse.ArgumentParser(
@@ -70,22 +71,51 @@ def main():
 
     start_time = time.time()
 
-    if args.spectrum == 0:
-        tomo_alignment = TomoSubsequentAlign(args.inputfile,
-                                             args.roi,
-                                             args.spectrum,
-                                             args.firstimg,
-                                             args.printmv,
-                                             args.nroihoriz,
-                                             args.nroivert,
-                                             args.width,
-                                             args.height)
-        tomo_alignment.initialize_align()
-        tomo_alignment.tomo_subsequent_alignment()
 
-    elif (args.spectrum == 1 and args.rmjumps == None):
-        if args.firstimg == 0:
-            spectrum_alignment = SpectrumSubsequentAlign(args.inputfile,
+    # Main alignment.
+    if (args.rmjumpshdf == None):
+        if args.spectrum == 0:
+            tomo_alignment = TomoSubsequentAlign(args.inputfile,
+                                                 args.roi,
+                                                 args.spectrum,
+                                                 args.firstimg,
+                                                 args.printmv,
+                                                 args.nroihoriz,
+                                                 args.nroivert,
+                                                 args.width,
+                                                 args.height)
+            tomo_alignment.initialize_align()
+            tomo_alignment.tomo_subsequent_alignment()
+
+        elif args.spectrum == 1:
+            if args.firstimg == 0:
+                spectrum_alignment = SpectrumSubsequentAlign(args.inputfile,
+                                                             args.roi,
+                                                             args.spectrum,
+                                                             args.firstimg,
+                                                             args.printmv,
+                                                             args.nroihoriz,
+                                                             args.nroivert,
+                                                             args.width,
+                                                             args.height)
+                spectrum_alignment.initialize_align()
+                spectrum_alignment.spectrum_subsequent_alignment()
+
+            elif args.firstimg == 1:
+                spectrum_alignment = SpectrumFromFirstImgAlign(args.inputfile,
+                                                               args.roi,
+                                                               args.spectrum,
+                                                               args.firstimg,
+                                                               args.printmv,
+                                                               args.nroihoriz,
+                                                               args.nroivert,
+                                                               args.width,
+                                                               args.height)
+                spectrum_alignment.initialize_align()
+                spectrum_alignment.spectrum_from_first_img_alignment()
+
+            elif args.firstimg == 2:
+                spectrum_alignment = SpectrumLinearAlign(args.inputfile,
                                                          args.roi,
                                                          args.spectrum,
                                                          args.firstimg,
@@ -94,39 +124,17 @@ def main():
                                                          args.nroivert,
                                                          args.width,
                                                          args.height)
-            spectrum_alignment.initialize_align()
-            spectrum_alignment.spectrum_subsequent_alignment()
+                spectrum_alignment.initialize_align()
+                spectrum_alignment.spectrum_linear_alignment()
 
-        elif args.firstimg == 1:
-            spectrum_alignment = SpectrumFromFirstImgAlign(args.inputfile,
-                                                           args.roi,
-                                                           args.spectrum,
-                                                           args.firstimg,
-                                                           args.printmv,
-                                                           args.nroihoriz,
-                                                           args.nroivert,
-                                                           args.width,
-                                                           args.height)
-            spectrum_alignment.initialize_align()
-            spectrum_alignment.spectrum_from_first_img_alignment()
-
-        elif args.firstimg == 2:
-            spectrum_alignment = SpectrumLinearAlign(args.inputfile,
-                                                     args.roi,
-                                                     args.spectrum,
-                                                     args.firstimg,
-                                                     args.printmv,
-                                                     args.nroihoriz,
-                                                     args.nroivert,
-                                                     args.width,
-                                                     args.height)
-            spectrum_alignment.initialize_align()
-            spectrum_alignment.spectrum_linear_alignment()
-
-    elif (args.spectrum == 1 and args.rmjumps != None):
-            post_alignment = PostAlignRemoveJumps(args.inputfile,
-                                                  args.rmjumpshdf)
-
+    else:
+        # Optional post-alignment.
+        # For the moment the remove jumps is only valid for spectroscopies.
+        # The artifact movement observed in spectroscopies is normally a drift.
+        # If a jump does not follow the tendance of the drift, the post_align   
+        # shall correct this jump by interpolating the moving vectors. 
+        post_alignment = PostAlignRemoveJumps(args.inputfile,
+                                              args.rmjumpshdf)
 
 
 

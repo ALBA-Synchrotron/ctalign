@@ -27,7 +27,47 @@ from alignlib.utils import Utils
 
 class PostAlignRemoveJumps():
 
-    def __init__(self, alignfile, normalizedfile):
-        pass
+    def __init__(self, normalizedfile, alignfile):
+        util_obj = Utils()
+        print(alignfile)
+        print(normalizedfile)
+
+        self.normalized_nexusfile = nxs.open(inputfile, 'r')
+        self.aligned_nexusfile = nxs.open(inputfile, 'r')
+
+
+        if self.spec == 0:
+            self.input_nexusfile.opengroup('TomoNormalized')
+        elif self.spec == 1:
+            self.input_nexusfile.opengroup('SpecNormalized')
+
+        dataset_name = 'mv_vectors'
+        try:
+            self.input_nexusfile.opendata(dataset_name)
+            self.mv_vectors = self.input_nexusfile.getdata()
+            self.input_nexusfile.closedata()
+        except: 
+            print("\nMove vectors could NOT be found.\n")
+            return
+
+
+    # Processing and calculation method. Interpolation and/or extrapolation for
+    # the first and the last image if they contain a big jump.
+    def images_to_move(self):
+        # To Return: A list indicating the images to be moved 
+        # (the images that have a big jump after the first alignment) 
+        # + the move_vectors by which have to be moved those images.
+        # Ex: [  [[3], [5, 6]],   [[105], [-3, 10]], ...]
+        return [[[3], [5, 6]],]
+
+
+
+    # To move a projection use the method: util_obj.mv_projection
+    # example can be found in alignspectrum/subsequent_align:
+    # proj2_moved = util_obj.mv_projection(zeros_img, proj2,
+    #                                      avg_move_vector)
+
+
+
 
 
