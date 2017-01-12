@@ -138,6 +138,8 @@ def main():
                                               args.rmjumpshdf)
 
 
+        post_alignment.move_images()
+
 
 
     print("\nImages aligned\n\n")

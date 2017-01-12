@@ -85,7 +85,7 @@ class Alignment(object):
         self.col_tem_to = 0
 
         self.image_proj1 = 0
-        self.nxsfied = 0
+        self.nxsfield = 0
         self.proj1 = 0
         self.central_img_num = 0
         self.top_left_base = 0
