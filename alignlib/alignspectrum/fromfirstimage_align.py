@@ -34,6 +34,9 @@ class SpectrumFromFirstImgAlign(Alignment):
                                                         num_roi_vertical,
                                                         width,
                                                         height)
+        # Initialize mv_vector_list with first element to [0, 0]
+        # because the first image is the reference image in this case.
+        self.mv_vector_list.append(np.zeros((2), dtype=np.int))
 
     # Align using the first image as reference.
     def spectrum_from_first_img_alignment(self):
