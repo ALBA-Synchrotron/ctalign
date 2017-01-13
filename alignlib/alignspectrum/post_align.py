@@ -32,14 +32,12 @@ class PostAlignRemoveJumps():
         self.aligned_nexusfile = nxs.nxload(alignfile, 'rw')
         self.util_obj = Utils()
 
-        dataset_name = 'move_vectors'
         try:
-            self.aligned_nexusfile.opendata(dataset_name)
-            self.mv_vectors = self.aligned_nexusfile.getdata()
-            self.aligned_nexusfile.closedata()
-        except: 
+            vectors = self.aligned_nexusfile['FastAligned']['move_vectors']
+            self.move_vectors = vectors
+        except Exception: 
             print("\nMove vectors could NOT be found.\n")
-            return
+            raise
    
         self.nFrames = 0
         self.numrows = 0
@@ -55,7 +53,7 @@ class PostAlignRemoveJumps():
         # Ex: [  [[3], [5, 6]],   [[105], [-3, 10]], ...]
 
         # List of images to move and its moving vector
-        images_to_mv = [[3, [5, 6]],[20, [-2, -3]], [124, [3, -7]]]
+        images_to_mv = [[3, [121, 122]],[20, [-20, -30]], [124, [30, -70]]]
         return images_to_mv
 
 
@@ -83,6 +81,10 @@ class PostAlignRemoveJumps():
                                                   self.numcols)
 
             mv_vector = images_to_mv[i][1]
+            vects_field = self.aligned_nexusfile['FastAligned']['move_vectors']
+            vects_field[img_num] = mv_vector
+
+
             zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
             image = slab[0, :, :]
             image_moved = self.util_obj.mv_projection(zeros_img, 
@@ -94,7 +96,7 @@ class PostAlignRemoveJumps():
             self.util_obj.store_image_in_hdf(slab_moved, nxsfield, slab_offset)
             print('Alignment of image (%d) corrected' % img_num)
 
-
+        vects_field.write()
 
 
 
