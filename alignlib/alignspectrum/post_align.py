@@ -28,14 +28,9 @@ class PostAlignRemoveJumps():
 
     def __init__(self, normalizedfile, alignfile):
 
-        self.util_obj = Utils()
-        print(alignfile)
-        print(normalizedfile)
-
         self.normalized_nexusfile = nxs.open(normalizedfile, 'r')
         self.aligned_nexusfile = nxs.nxload(alignfile, 'rw')
-
-        #print(self.aligned_nexusfile.tree)
+        self.util_obj = Utils()
 
         dataset_name = 'move_vectors'
         try:
@@ -51,7 +46,6 @@ class PostAlignRemoveJumps():
         self.numcols = 0
 
 
-
     # Processing and calculation method. Interpolation and/or extrapolation for
     # the first and the last image if they contain a big jump.
     def images_to_move(self):
@@ -59,14 +53,10 @@ class PostAlignRemoveJumps():
         # (the images that have a big jump after the first alignment) 
         # + the move_vectors by which have to be moved those images.
         # Ex: [  [[3], [5, 6]],   [[105], [-3, 10]], ...]
-        return [[[3], [5, 6]],]
 
-
-
-    # To move a projection use the method: util_obj.mv_projection
-    # example can be found in alignspectrum/subsequent_align:
-    # proj2_moved = util_obj.mv_projection(zeros_img, proj2,
-    #                                      avg_move_vector)
+        # List of images to move and its moving vector
+        images_to_mv = [[3, [5, 6]],[20, [-2, -3]], [124, [3, -7]]]
+        return images_to_mv
 
 
     def move_images(self):
@@ -78,25 +68,37 @@ class PostAlignRemoveJumps():
         self.numrows = infoshape[0][1]
         self.numcols = infoshape[0][2]
 
-
         # Get image to move (and the vector for which it has to be moved) 
-        # with method 'images_to_move'. This will have to be done with a for 
-        # loop using 'images_to_move'.
-        img_num = 10
-
-        image_proj1 = self.util_obj.get_single_image(self.normalized_nexusfile,
-                                                     img_num,
-                                                     self.numrows,
-                                                     self.numcols)
-
-        size_img = np.shape(image_proj1)
-        print(size_img)
-
-        slab_offset = [img_num, 0, 0]
+        # with method 'images_to_move'.
+        images_to_mv = self.images_to_move()
+        
+        # Move images that contained a big jump (incorrectly aligned), 
+        # according to the output of images_to_move method.
         nxsfield = self.aligned_nexusfile['FastAligned']['spec_aligned']
+        for i in range(len(images_to_mv)):
+            img_num = images_to_mv[i][0]
+            slab = self.util_obj.get_single_image(self.normalized_nexusfile,
+                                                  img_num,
+                                                  self.numrows,
+                                                  self.numcols)
 
-        self.util_obj.store_image_in_hdf(image_proj1, nxsfield, slab_offset)
-        print('Alignment of image (%d) corrected\n' % img_num)
+            mv_vector = images_to_mv[i][1]
+            zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
+            image = slab[0, :, :]
+            image_moved = self.util_obj.mv_projection(zeros_img, 
+                                                      image, mv_vector)
+            slab_moved = np.zeros([1, self.numrows, self.numcols], 
+                                   dtype='float32')
+            slab_moved[0] = image_moved
+            slab_offset = [img_num, 0, 0]
+            self.util_obj.store_image_in_hdf(slab_moved, nxsfield, slab_offset)
+            print('Alignment of image (%d) corrected' % img_num)
+
+
+
+
+
+
 
 
 
