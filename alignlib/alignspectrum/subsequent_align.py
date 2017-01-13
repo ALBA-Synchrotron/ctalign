@@ -158,7 +158,7 @@ class SpectrumSubsequentAlign(Alignment):
             zeros_img = np.zeros((self.numrows, self.numcols),
                                  dtype='float32')
             proj2_moved = self.util_obj.mv_projection(zeros_img, proj2, 
-                                                      avg_mv_vector)
+                                                      avg_move_vector)
             proj2 = np.zeros([1, self.numrows, self.numcols],
                              dtype='float32')
             proj2[0] = proj2_moved
@@ -167,7 +167,7 @@ class SpectrumSubsequentAlign(Alignment):
             self.proj1 = proj2_moved
 
             self.counter = self.util_obj.count(self.counter)
-            self.mv_vector_list.append(avg_mv_vector)
+            self.mv_vector_list.append(avg_move_vector)
 
         if self.printmv == 1:
             self.util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)

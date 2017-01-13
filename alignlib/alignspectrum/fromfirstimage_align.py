@@ -159,14 +159,14 @@ class SpectrumFromFirstImgAlign(Alignment):
             # Move the projection thanks to the found move vector
             zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
             proj2_moved = self.util_obj.mv_projection(zeros_img, proj2, 
-                                                 avg_move_vector)
+                                                      avg_move_vector)
             proj2 = np.zeros([1, self.numrows, self.numcols], dtype='float32')
             proj2[0] = proj2_moved
             slab_offset = [numimg, 0, 0]
             self.util_obj.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
 
             self.counter = self.util_obj.count(self.counter)
-            self.mv_vector_list.append(avg_mv_vector)
+            self.mv_vector_list.append(avg_move_vector)
 
         if self.printmv == 1:
             self.util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
