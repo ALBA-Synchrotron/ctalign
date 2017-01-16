@@ -53,6 +53,39 @@ class PostAlignRemoveJumps():
         # Ex: [  [[3], [5, 6]],   [[105], [-3, 10]], ...]
 
         # List of images to move and its moving vector
+        
+
+        len_vector = np.shape(self.move_vectors)[0]
+
+        #### I think finally I will not use this method with the squares
+        abs_value_mv_vects = []
+        for i in range(len_vector):
+            vect = self.move_vectors[i]
+            abs_val = np.sqrt(vect[0]**2 + vect[1]**2)
+            abs_value_mv_vects.append(int(abs_val))
+
+        diff_vector = []
+        for i in range(len_vector-1):
+            diff_vector.append(abs_value_mv_vects[i+1] - abs_value_mv_vects[i])
+
+
+        print(abs_value_mv_vects)
+        print("\n")
+        print(diff_vector)
+
+        avg_diff = int(np.mean(diff_vector))
+        std_diff = np.std(diff_vector)
+
+        print(avg_diff)
+        print(std_diff)
+        ###############################################
+
+        
+        ## Idea: with the two components of the moving vectors independently
+        ## do a linear regression of those two lines. Do the subtraction
+        ## between the line of the linear regression and the real data.
+        ## Do it for one data component, and for the other component.
+        ## Then process the outliers.
         images_to_mv = [[3, [121, 122]],[20, [-20, -30]], [124, [30, -70]]]
         return images_to_mv
 
