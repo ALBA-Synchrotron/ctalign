@@ -58,6 +58,7 @@ class PostAlignRemoveJumps():
         len_vector = np.shape(self.move_vectors)[0]
 
         #### I think finally I will not use this method with the squares
+        """
         abs_value_mv_vects = []
         for i in range(len_vector):
             vect = self.move_vectors[i]
@@ -78,7 +79,10 @@ class PostAlignRemoveJumps():
 
         print(avg_diff)
         print(std_diff)
+        """
         ###############################################
+
+
 
         
         ## Idea: with the two components of the moving vectors independently
@@ -86,6 +90,48 @@ class PostAlignRemoveJumps():
         ## between the line of the linear regression and the real data.
         ## Do it for one data component, and for the other component.
         ## Then process the outliers.
+
+        rows = np.array(self.move_vectors[:, 0])
+        columns = np.array(self.move_vectors[:, 1])
+        x = np.linspace(0, len_vector-1, len_vector, dtype=int)
+
+        print("\n")
+        print("\n")
+        print(type(rows))
+        print(rows)
+
+
+        # For linear regression or rows:
+        z_rows = np.polyfit(x, rows, 1)
+        p_rows = np.poly1d(z_rows)
+
+        print(p_rows(0))
+        print(p_rows(1))
+        print(p_rows(5))
+        print(p_rows(45))
+        print(p_rows(100))
+        print(p_rows(120))
+        print(p_rows(145))
+
+        # For linear regression or columns:
+        z_cols = np.polyfit(x, columns, 1)
+        p_cols = np.poly1d(z_cols)
+
+        print(p_cols(0))
+        print(p_cols(1))
+        print(p_cols(5))
+        print(p_cols(45))
+        print(p_cols(100))
+        print(p_cols(120))
+        print(p_cols(145))
+
+        # After doing so the starndard deviation of vectors of difference 
+        # (for rows and for cols) should be calculated. This will give us the
+        # an idea of the threshold when doing the subtraction between each value
+        # of interpolation and data vector (for rows and for columns). 
+        # If the value of this subtraction is higher than the choosen threshold,
+        # It will mean that a jump exist in such moving vector.
+
         images_to_mv = [[3, [121, 122]],[20, [-20, -30]], [124, [30, -70]]]
         return images_to_mv
 
