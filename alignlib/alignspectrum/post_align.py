@@ -47,92 +47,108 @@ class PostAlignRemoveJumps():
     # Processing and calculation method. Interpolation and/or extrapolation for
     # the first and the last image if they contain a big jump.
     def images_to_move(self):
-        # To Return: A list indicating the images to be moved 
+        # Return: A list indicating the images to be moved 
         # (the images that have a big jump after the first alignment) 
         # + the move_vectors by which have to be moved those images.
-        # Ex: [  [[3], [5, 6]],   [[105], [-3, 10]], ...]
-
-        # List of images to move and its moving vector
+        # List of images to move and its corrected moving vector
+        # Ex:[[3, [121, 122]],[20, [-20, -30]], [124, [30, -70]]]
         
-
-        len_vector = np.shape(self.move_vectors)[0]
-
-        #### I think finally I will not use this method with the squares
-        """
-        abs_value_mv_vects = []
-        for i in range(len_vector):
-            vect = self.move_vectors[i]
-            abs_val = np.sqrt(vect[0]**2 + vect[1]**2)
-            abs_value_mv_vects.append(int(abs_val))
-
-        diff_vector = []
-        for i in range(len_vector-1):
-            diff_vector.append(abs_value_mv_vects[i+1] - abs_value_mv_vects[i])
-
-
-        print(abs_value_mv_vects)
-        print("\n")
-        print(diff_vector)
-
-        avg_diff = int(np.mean(diff_vector))
-        std_diff = np.std(diff_vector)
-
-        print(avg_diff)
-        print(std_diff)
-        """
-        ###############################################
-
-
-
         
-        ## Idea: with the two components of the moving vectors independently
+        ## With the two components of the moving vectors independently
         ## do a linear regression of those two lines. Do the subtraction
         ## between the line of the linear regression and the real data.
         ## Do it for one data component, and for the other component.
-        ## Then process the outliers.
+        ## Then find the outliers.
 
         rows = np.array(self.move_vectors[:, 0])
         columns = np.array(self.move_vectors[:, 1])
+        len_vector = np.shape(self.move_vectors)[0]
         x = np.linspace(0, len_vector-1, len_vector, dtype=int)
 
-        print("\n")
-        print("\n")
-        print(type(rows))
-        print(rows)
 
-
-        # For linear regression or rows:
+        ###########################################
+        # Find some indexes of jumped images thanks to the 
+        # processing of rows data:
         z_rows = np.polyfit(x, rows, 1)
         p_rows = np.poly1d(z_rows)
+        rows_interp = p_rows(x)
+        difference_interp_from_data_rows = rows - rows_interp
 
-        print(p_rows(0))
-        print(p_rows(1))
-        print(p_rows(5))
-        print(p_rows(45))
-        print(p_rows(100))
-        print(p_rows(120))
-        print(p_rows(145))
-
-        # For linear regression or columns:
-        z_cols = np.polyfit(x, columns, 1)
-        p_cols = np.poly1d(z_cols)
-
-        print(p_cols(0))
-        print(p_cols(1))
-        print(p_cols(5))
-        print(p_cols(45))
-        print(p_cols(100))
-        print(p_cols(120))
-        print(p_cols(145))
-
-        # After doing so the starndard deviation of vectors of difference 
-        # (for rows and for cols) should be calculated. This will give us the
+        # Mean and standard deviation of the difference between 
+        # the actual data of the row vectors and its linear regression.
+        # The starndard deviation of vectors of difference 
+        # (for rows and for cols) is calculated. This gives us the
         # an idea of the threshold when doing the subtraction between each value
         # of interpolation and data vector (for rows and for columns). 
         # If the value of this subtraction is higher than the choosen threshold,
-        # It will mean that a jump exist in such moving vector.
+        # it means that a jump exist in such moving vector.
+        mean_diff_rows = np.mean(difference_interp_from_data_rows)
+        std_diff_rows = np.std(difference_interp_from_data_rows)
 
-        images_to_mv = [[3, [121, 122]],[20, [-20, -30]], [124, [30, -70]]]
+        # We leave an offset of pixels. Jumps smaller than offset won't be 
+        # corrected: they are not considered as big jumps.
+        offset = 6
+
+        # Thanks to the data of the moving rows some indexes are obtained.
+        abs_diff_rows = np.abs(difference_interp_from_data_rows)
+        idx_images_to_correct_rows = [i for i,v in enumerate(abs_diff_rows) if 
+                                  v > (offset + mean_diff_rows + std_diff_rows)]
+
+        ###########################################
+        # Find the rest of indexes of jumped images thanks to the 
+        # processing of columns data:
+        z_cols = np.polyfit(x, columns, 1)
+        p_cols = np.poly1d(z_cols)
+        cols_interp = p_cols(x)
+        difference_interp_from_data_cols = columns - cols_interp
+
+        # Mean and standard deviation of the difference between 
+        # the actual data of the column vectors and its linear regression.
+        mean_diff_cols = np.mean(difference_interp_from_data_cols)
+        std_diff_cols = np.std(difference_interp_from_data_cols)
+
+        # We leave an offset of pixels. Jumps smaller than offset won't be 
+        # corrected: they are not considered as big jumps.
+        offset = 5
+
+        # Thanks to the data of the moving columns some indexes are obtained.
+        abs_diff_cols = np.abs(difference_interp_from_data_cols)
+        idx_images_to_correct_cols = [i for i,v in enumerate(abs_diff_cols) if 
+                                 v > (offset + mean_diff_cols + std_diff_cols)]
+
+        idx_rows = idx_images_to_correct_rows
+        idx_cols = idx_images_to_correct_cols
+        idx_images_to_correct_move = sorted(list(set(idx_rows)|set(idx_cols)))
+
+        print("The following images will be corrected:")        
+        print(idx_images_to_correct_move)
+        print("\n")
+
+        # Looking for the new corrected moving vectors.
+        # First, recalculate the regression line after correcting in a 
+        # raw manner the jumping vectors.
+        for i in idx_images_to_correct_move:
+            if i != 0:
+                rows[i] = rows[i-1]
+                columns[i] = columns[i-1]
+
+        z_rows = np.polyfit(x, rows, 1)
+        p_rows = np.poly1d(z_rows)
+        rows_interp = p_rows(x)
+
+        z_cols = np.polyfit(x, columns, 1)
+        p_cols = np.poly1d(z_cols)
+        cols_interp = p_cols(x)
+
+        # Then look for the moving corrected values for the jumping images.
+        images_to_mv = []
+        for i in idx_images_to_correct_move:
+            if i != 0:
+                rows[i] = int(rows_interp[i])
+                columns[i] = int(cols_interp[i])
+                images_to_mv.append([i, [rows[i], columns[i]]])
+        
+        #images_to_mv = [[3, [121, 122]],[2, [-20, -30]], [124, [30, -70]]]
         return images_to_mv
 
 
@@ -148,10 +164,10 @@ class PostAlignRemoveJumps():
         # Get image to move (and the vector for which it has to be moved) 
         # with method 'images_to_move'.
         images_to_mv = self.images_to_move()
-        
         # Move images that contained a big jump (incorrectly aligned), 
         # according to the output of images_to_move method.
         nxsfield = self.aligned_nexusfile['FastAligned']['spec_aligned']
+        vects_field = self.aligned_nexusfile['FastAligned']['move_vectors']
         for i in range(len(images_to_mv)):
             img_num = images_to_mv[i][0]
             slab = self.util_obj.get_single_image(self.normalized_nexusfile,
@@ -160,10 +176,8 @@ class PostAlignRemoveJumps():
                                                   self.numcols)
 
             mv_vector = images_to_mv[i][1]
-            vects_field = self.aligned_nexusfile['FastAligned']['move_vectors']
+
             vects_field[img_num] = mv_vector
-
-
             zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
             image = slab[0, :, :]
             image_moved = self.util_obj.mv_projection(zeros_img, 
