@@ -43,7 +43,6 @@ class PostAlignRemoveJumps():
         self.numrows = 0
         self.numcols = 0
 
-
     # Processing and calculation method. Interpolation and/or extrapolation for
     # the first and the last image if they contain a big jump.
     def images_to_move(self):
@@ -58,13 +57,11 @@ class PostAlignRemoveJumps():
         ## do a linear regression of those two lines. Do the subtraction
         ## between the line of the linear regression and the real data.
         ## Do it for one data component, and for the other component.
-        ## Then find the outliers.
-
+        ## Then find the outliers and correct them.
         rows = np.array(self.move_vectors[:, 0])
         columns = np.array(self.move_vectors[:, 1])
         len_vector = np.shape(self.move_vectors)[0]
         x = np.linspace(0, len_vector-1, len_vector, dtype=int)
-
 
         ###########################################
         # Find some indexes of jumped images thanks to the 
@@ -87,7 +84,7 @@ class PostAlignRemoveJumps():
 
         # We leave an offset of pixels. Jumps smaller than offset won't be 
         # corrected: they are not considered as big jumps.
-        offset = 6
+        offset = 5
 
         # Thanks to the data of the moving rows some indexes are obtained.
         abs_diff_rows = np.abs(difference_interp_from_data_rows)
@@ -120,14 +117,11 @@ class PostAlignRemoveJumps():
         idx_cols = idx_images_to_correct_cols
         idx_images_to_correct_move = sorted(list(set(idx_rows)|set(idx_cols)))
 
-        
-
         # Parsing the list of indexes to make groups of correlative images
         # that have jumped. The jumps can be of individual images, or of
         # many correlative images that have jumped incorreclty.
         # The parsing is done in the list of lists 'groups_idx'.
         idx_mv = idx_images_to_correct_move
-
         sublist = []
         groups_idx = []
         for i in range(len(idx_mv)):
@@ -142,37 +136,44 @@ class PostAlignRemoveJumps():
             else:
                 sublist.append(idx_mv[i])
                 groups_idx.append(sublist)
-                    
-    
-
+                   
         # Looking for the new corrected moving vectors.
-        # First, recalculate the regression line after correcting in a 
-        # raw manner the jumping vectors.
-        """
-        for i in idx_images_to_correct_move:
-            if i != 0:
-                rows[i] = rows[i-1]
-                columns[i] = columns[i-1]
+        # Do it by interpolating.
+        # We interpolate each group of correlative jumping images.
+        for i in range(len(groups_idx)):
+            group_idx = groups_idx[i]
+            # first index in group
+            first = group_idx[0]
+            # last index in group
+            last = group_idx[-1]
+            if (group_idx[-1] != len_vector-1):
+                # If group does NOT contain index of last image in the stack
+                row_before = rows[first-1]
+                row_after = rows[last+1]
+                step_row = (row_after-row_before)/(len(group_idx)+1)
+                col_before = columns[first-1]
+                col_after = columns[last+1]
+                step_col = (col_after-col_before)/(len(group_idx)+1)
+                c = 0
+                for idx in group_idx:
+                    c = c+1
+                    # Interpolated rows
+                    rows[idx] = int(row_before+c*step_row)
+                    # Interpolated columns
+                    columns[idx] = int(col_before+c*step_col)
+            elif group_idx[-1] == len_vector-1:
+                # If group contains index of last image in the stack
+                c = 0
+                for idx in group_idx:
+                    rows[idx] = int(rows[first-1])
+                    columns[idx]= int(columns[first-1])
 
-        z_rows = np.polyfit(x, rows, 1)
-        p_rows = np.poly1d(z_rows)
-        rows_interp = p_rows(x)
-
-        z_cols = np.polyfit(x, columns, 1)
-        p_cols = np.poly1d(z_cols)
-        cols_interp = p_cols(x)
-        """
-
-
-        # Then look for the moving corrected values for the jumping images.
         images_to_mv = []
         for i in idx_images_to_correct_move:
             if i != 0:
-                rows[i] = int(rows_interp[i])
-                columns[i] = int(cols_interp[i])
                 images_to_mv.append([i, [rows[i], columns[i]]])
-        
-        #images_to_mv = [[3, [121, 122]],[2, [-20, -30]], [124, [30, -70]]]
+
+        #images_to_mv = [[5, [121, 122]],[7, [-20, -30]], [146, [-20, -30]]]
         return images_to_mv
 
 
@@ -214,11 +215,6 @@ class PostAlignRemoveJumps():
             print('Alignment of image (%d) corrected' % img_num)
 
         vects_field.write()
-
-
-
-
-
 
 
 
