@@ -144,6 +144,8 @@ class PostAlignRemoveJumps():
             group_idx = groups_idx[i]
             # first index in group
             first = group_idx[0]
+            if first == 0:
+                first = 1
             # last index in group
             last = group_idx[-1]
             if (group_idx[-1] != len_vector-1):
