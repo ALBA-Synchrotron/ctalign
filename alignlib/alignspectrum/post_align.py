@@ -116,6 +116,8 @@ class PostAlignRemoveJumps():
         idx_rows = idx_images_to_correct_rows
         idx_cols = idx_images_to_correct_cols
         idx_images_to_correct_move = sorted(list(set(idx_rows)|set(idx_cols)))
+        if idx_images_to_correct_move[0] == 0:
+            idx_images_to_correct_move.pop(0)    
 
         # Parsing the list of indexes to make groups of correlative images
         # that have jumped. The jumps can be of individual images, or of
@@ -144,8 +146,6 @@ class PostAlignRemoveJumps():
             group_idx = groups_idx[i]
             # first index in group
             first = group_idx[0]
-            if first == 0:
-                first = 1
             # last index in group
             last = group_idx[-1]
             if (group_idx[-1] != len_vector-1):
