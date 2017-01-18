@@ -120,9 +120,35 @@ class PostAlignRemoveJumps():
         idx_cols = idx_images_to_correct_cols
         idx_images_to_correct_move = sorted(list(set(idx_rows)|set(idx_cols)))
 
+        
+
+        # Parsing the list of indexes to make groups of correlative images
+        # that have jumped. The jumps can be of individual images, or of
+        # many correlative images that have jumped incorreclty.
+        # The parsing is done in the list of lists 'groups_idx'.
+        idx_mv = idx_images_to_correct_move
+
+        sublist = []
+        groups_idx = []
+        for i in range(len(idx_mv)):
+            if i < len(idx_mv)-1:
+                if idx_mv[i+1] - idx_mv[i] == 1:
+                    sublist.append(idx_mv[i])
+                else:
+                    sublist.append(idx_mv[i])
+                    groups_idx.append(sublist)
+                    sublist=[]
+
+            else:
+                sublist.append(idx_mv[i])
+                groups_idx.append(sublist)
+                    
+    
+
         # Looking for the new corrected moving vectors.
         # First, recalculate the regression line after correcting in a 
         # raw manner the jumping vectors.
+        """
         for i in idx_images_to_correct_move:
             if i != 0:
                 rows[i] = rows[i-1]
@@ -135,6 +161,8 @@ class PostAlignRemoveJumps():
         z_cols = np.polyfit(x, columns, 1)
         p_cols = np.poly1d(z_cols)
         cols_interp = p_cols(x)
+        """
+
 
         # Then look for the moving corrected values for the jumping images.
         images_to_mv = []
