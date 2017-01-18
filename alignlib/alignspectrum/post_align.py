@@ -92,7 +92,7 @@ class PostAlignRemoveJumps():
         # Thanks to the data of the moving rows some indexes are obtained.
         abs_diff_rows = np.abs(difference_interp_from_data_rows)
         idx_images_to_correct_rows = [i for i,v in enumerate(abs_diff_rows) if 
-                                  v > (offset + mean_diff_rows + std_diff_rows)]
+                            v > (offset + abs(mean_diff_rows) + std_diff_rows)]
 
         ###########################################
         # Find the rest of indexes of jumped images thanks to the 
@@ -114,15 +114,11 @@ class PostAlignRemoveJumps():
         # Thanks to the data of the moving columns some indexes are obtained.
         abs_diff_cols = np.abs(difference_interp_from_data_cols)
         idx_images_to_correct_cols = [i for i,v in enumerate(abs_diff_cols) if 
-                                 v > (offset + mean_diff_cols + std_diff_cols)]
+                            v > (offset + abs(mean_diff_cols) + std_diff_cols)]
 
         idx_rows = idx_images_to_correct_rows
         idx_cols = idx_images_to_correct_cols
         idx_images_to_correct_move = sorted(list(set(idx_rows)|set(idx_cols)))
-
-        print("The following images will be corrected:")        
-        print(idx_images_to_correct_move)
-        print("\n")
 
         # Looking for the new corrected moving vectors.
         # First, recalculate the regression line after correcting in a 
