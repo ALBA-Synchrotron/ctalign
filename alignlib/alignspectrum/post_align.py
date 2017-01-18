@@ -152,10 +152,10 @@ class PostAlignRemoveJumps():
                 # If group does NOT contain index of last image in the stack
                 row_before = rows[first-1]
                 row_after = rows[last+1]
-                step_row = (row_after-row_before)/(len(group_idx)+1)
+                step_row = (float(row_after-row_before))/(len(group_idx)+1)
                 col_before = columns[first-1]
                 col_after = columns[last+1]
-                step_col = (col_after-col_before)/(len(group_idx)+1)
+                step_col = (float(col_after-col_before))/(len(group_idx)+1)
                 c = 0
                 for idx in group_idx:
                     c = c+1
