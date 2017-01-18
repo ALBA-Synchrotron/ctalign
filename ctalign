@@ -65,7 +65,9 @@ def main():
                         help='Print move vectors between images. \n' +
                         'Default = 0')
     parser.add_argument('-j', '--rmjumpshdf', type=str, default=None,
-        help='Enter hdf5 file containing the aligned spectroscopy')
+        help= 'Post-alignment for removing jumps in spectroscopies.\n' +
+              'Mandatory argument: hdf5 normalized spectroscopy' +
+              'j= hdf5 containing the aligned spectroscopy.')
     args = parser.parse_args()
 
     print("\nAligning images\n")
