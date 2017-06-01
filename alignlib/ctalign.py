@@ -22,13 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import time
 import argparse
 
-from alignlib.aligntomo.tomo_subsequent_align import TomoSubsequentAlign
+from aligntomo.tomo_subsequent_align import TomoSubsequentAlign
 
-from alignlib.alignspectrum.linear_align import SpectrumLinearAlign
-from alignlib.alignspectrum.subsequent_align import SpectrumSubsequentAlign
-from alignlib.alignspectrum.fromfirstimage_align import \
+from alignspectrum.linear_align import SpectrumLinearAlign
+from alignspectrum.subsequent_align import SpectrumSubsequentAlign
+from alignspectrum.fromfirstimage_align import \
     SpectrumFromFirstImgAlign
-from alignlib.alignspectrum.post_align import PostAlignRemoveJumps
+from alignspectrum.post_align import PostAlignRemoveJumps
 
 def main():
     parser = argparse.ArgumentParser(
