@@ -15,7 +15,7 @@ setup(
     packages=find_packages(),
     entry_points={
 	'console_scripts': [
-        'ctalign = ctalignlib.ctalign:main']
+        'ctalign = alignlib.ctalign:main']
         }
 )
 
