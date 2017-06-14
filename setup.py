@@ -46,7 +46,7 @@ setup(
         'ctalign = alignlib.ctalign:main']
     },
     author='Marc Rosanes',
-    author_email='mrosanesn@cells.es',
+    author_email='mrosanes@cells.es',
     maintainer='ctgensoft',
     maintainer_email='ctgensoft@cells.es',
     url='https://git.cells.es/controls/ctalign',
