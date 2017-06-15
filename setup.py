@@ -55,7 +55,7 @@ setup(
     description='Alignment of images of an hdf5 image stack',
     long_description=long_description,
     requires=['setuptools (>=1.1)'],
-    install_requires=['numpy', 'cv2', 'h5py', 'nxs'],
+    install_requires=['numpy', 'cv2', 'h5py', 'nexusformat'],
     classifiers=classifiers
     
 )
