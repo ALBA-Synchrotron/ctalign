@@ -57,10 +57,8 @@ setup(
     requires=['setuptools (>=1.1)'],
     # Requirements used by pip. 
     # It also depends of Nexus, but it is not added here because nxs is not
-    # present in pip.
-    # It also depends of pip 'opencv-python', but it is not added here because
-    # it gives conflicts.
-    install_requires=['numpy', 'h5py'],
+    # present in pip, and it is deprecated.
+    install_requires=['numpy', 'h5py', 'opencv-python'],
     classifiers=classifiers
 )
 
