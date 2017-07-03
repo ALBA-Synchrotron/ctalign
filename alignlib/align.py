@@ -19,11 +19,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import numpy as np
-import nxs
-import cv2
 import os
+import numpy as np
+import cv2
+
+import h5py
+import nxs
 from alignlib.utils import Utils
+
 
 class Alignment(object):
     # Constructor of Alignment object ###
@@ -279,7 +282,7 @@ class Alignment(object):
             if counts >= threshold_similar_vectors:
                 second_elem_filtered_mv_vectors.append(sorted_mv_list[i])
 
-        # If there are not at least 2 vectors in the list repeat the procdure
+        # If there are not at least 2 vectors in the list repeat the procedure
         # for a lower threshold of number of similar vectors.
         for i in range(8):
             if len(second_elem_filtered_mv_vectors) < 2:
@@ -290,7 +293,8 @@ class Alignment(object):
                 for i in range(len(sorted_mv_list)):
                     counts = counts_of_similar_vectors[i]
                     if counts >= threshold_similar_vectors:
-                        second_elem_filtered_mv_vectors.append(sorted_mv_list[i])
+                        second_elem_filtered_mv_vectors.append(
+                            sorted_mv_list[i])
             else:
                 break
 
