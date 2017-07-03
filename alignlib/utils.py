@@ -33,23 +33,6 @@ class Utils:
         f.close()
         print("\nMove vectors file has been created")
 
-    def count(self, counter):
-        counter += 1
-        if counter % 10 == 0:
-            print(".")
-        return counter
-
-    # Get image
-    def get_single_image(self, input_nexus_file, numimg, numrows, numcols):
-        image_retrieved = input_nexus_file.getslab([numimg, 0, 0],
-                                                   [1, numrows, numcols])
-        return image_retrieved
-
-    # Store image in hdf5 file
-    def store_image_in_hdf(self, image, nxsfield, slab_offset):
-        nxsfield.put(image, slab_offset, refresh=False)
-        nxsfield.write()
-
     # Move a projection #
     def mv_projection(self, empty_img, proj_two, mv_vector):
         rows = proj_two.shape[0]

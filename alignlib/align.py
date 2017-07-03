@@ -33,7 +33,10 @@ class Alignment(object):
     def __init__(self, inputfile, roi_select, spec, firstimg, printmv,
                  num_roi_horizontal, num_roi_vertical, width, height):
 
-        self.input_nexusfile = nxs.open(inputfile, 'r')
+        self.filename_nexus = inputfile
+        self.input_nexusfile = h5py.File(self.filename_nexus, 'r')
+        self.norm_grp = 0
+
         self.outputfilehdf5 = inputfile.split('.hdf')[0] + '_ali' + '.hdf5'
         self.path = os.path.dirname(inputfile)
         if not self.path:
@@ -46,8 +49,9 @@ class Alignment(object):
             self.data_nxs = 'tomo_aligned'
         elif self.spec == 1:
             self.data_nxs = 'spec_aligned'
-        self.align = nxs.NXentry(name="FastAligned")
-        self.align.save(self.outputfilehdf5, 'w5')
+        self.align_file = h5py.File(self.outputfilehdf5, 'w')
+        self.align = self.align_file.create_group("FastAligned")
+        self.align.attrs['NX_class'] = "NXentry"
 
         self.util_obj = Utils()
         self.method = eval('cv2.TM_CCOEFF_NORMED')
@@ -110,18 +114,14 @@ class Alignment(object):
             mult_factor = 1 / img_for_roi_select.max()
             img_for_roi_select = mult_factor * img_for_roi_select
         else:
-            img_without_borders = img_for_roi_select[int(self.numrows*0.15): 
-                                  self.numrows - int(self.numrows*0.07), 
-                                  int(self.numcols*0.15): 
-                                  self.numcols - int(self.numcols*0.07)] 
-
+            img_without_borders = img_for_roi_select[
+                int(self.numrows*0.15):self.numrows - int(self.numrows*0.07),
+                int(self.numcols*0.15):self.numcols - int(self.numcols*0.07)]
             max_pixel_img = np.amax(img_without_borders)
             min_pixel_img = np.amin(img_without_borders)
-            factor_feature_matching = (1.0/(max_pixel_img - \
-                                            min_pixel_img))
-
-            img_for_roi_select = ((img_for_roi_select - min_pixel_img) * \
-                                (factor_feature_matching)*255).astype(np.uint8) 
+            factor_feature_matching = (1.0/(max_pixel_img - min_pixel_img))
+            img_for_roi_select = ((img_for_roi_select - min_pixel_img) *
+                                  factor_feature_matching*255).astype(np.uint8)
 
         window_name = "projection_for_roi_selection"
 
@@ -320,18 +320,12 @@ class Alignment(object):
             currents_dataset_name = 'CurrentsTomo'
         elif self.spec == 1:
             currents_dataset_name = 'Currents'
+
         try:
-            self.input_nexusfile.opendata(currents_dataset_name)
-            currents = self.input_nexusfile.getdata()
-            self.input_nexusfile.closedata()
-            self.align['Currents'] = currents
-            self.align['Currents'].write()
+            currents = self.norm_grp[currents_dataset_name].value
+            self.align["Currents"] = currents
         except:
             print("\nCurrents could NOT be extracted.\n")
-            try:
-                self.input_nexusfile.closedata()
-            except:
-                pass
 
     def store_exposure_times(self):
         ###################################################
@@ -342,77 +336,46 @@ class Alignment(object):
         elif self.spec == 1:
             exposure_dataset_name = 'ExpTimes'
         try:
-            self.input_nexusfile.opendata(exposure_dataset_name)
-            exptimes = self.input_nexusfile.getdata()
-            self.input_nexusfile.closedata()
-            self.align['ExpTimes'] = exptimes
-            self.align['ExpTimes'].write()
+            exptimes = self.norm_grp[exposure_dataset_name].value
+            self.align["ExpTimes"] = exptimes
         except:
             print("\nExposure Times could NOT be extracted.\n")
-            try:
-                self.input_nexusfile.closedata()
-            except:
-                pass
 
     def store_pixel_size(self):
-        ###################################################
-        # Retrieving important data from Pixel Size      ##
-        ###################################################
+        #########################
+        # Retrieving Pixel Size #
+        #########################
         try:
-            self.input_nexusfile.opendata('x_pixel_size')
-            x_pixel_size = self.input_nexusfile.getdata()
-            self.input_nexusfile.closedata()
-            self.input_nexusfile.opendata('y_pixel_size')
-            y_pixel_size = self.input_nexusfile.getdata()
-            self.input_nexusfile.closedata()
-            self.align['x_pixel_size'] = x_pixel_size
-            self.align['x_pixel_size'].write()
-            self.align['y_pixel_size'] = y_pixel_size
-            self.align['y_pixel_size'].write()
+            x_pixel_size = self.norm_grp["x_pixel_size"].value
+            y_pixel_size = self.norm_grp["y_pixel_size"].value
+            self.align.create_dataset("x_pixel_size", data=x_pixel_size)
+            self.align.create_dataset("y_pixel_size", data=y_pixel_size)
         except:
             print("\nPixel size could NOT be extracted.\n")
-            try:
-                self.input_nexusfile.closedata()
-            except:
-                pass
 
     def store_energies(self):
-        #############################################
-        # Retrieving important data from energies  ##
-        #############################################
+        #######################
+        # Retrieving Energies #
+        #######################
         try:
-            self.input_nexusfile.opendata('energy')
-            energies = self.input_nexusfile.getdata()
-            self.input_nexusfile.closedata()
-            self.align['energy'] = energies
-            self.align['energy'].write()
+            energies = self.norm_grp["energy"].value
+            self.align.create_dataset("energy", data=energies)
         except:
-            print("\nEnergies could NOT be extracted.\n")
-            try:
-                self.input_nexusfile.closedata()
-            except:
-                pass
+            print("\nEnergies could not be extracted.\n")
 
     def store_angles(self):
-        ########################################
-        # Storing tilt angles in a text file  ##
-        ########################################
+        #######################
+        # Retrieving Angles #
+        #######################
         try:
-            self.input_nexusfile.opendata('rotation_angle')
-            self.angles = self.input_nexusfile.getdata()
-            self.input_nexusfile.closedata()
-            self.align['rotation_angle'] = self.angles
-            self.align['rotation_angle'].write()
+            self.angles = self.norm_grp["rotation_angle"].value
+            self.align.create_dataset("rotation_angle", data=self.angles)
         except:
-            print("\nAngles could NOT be extracted.\n")
-            try:
-                self.input_nexusfile.closedata()
-            except:
-                pass
+            print("\nAngles could not be extracted.\n")
         if self.spec == 0:
             try:
                 angles_file = self.path + "/angles.tlt"
-                from os import path 
+                from os import path
                 file_exists = path.isfile(angles_file)
                 if not file_exists:
                     f = open(angles_file, 'w')
@@ -437,30 +400,32 @@ class Alignment(object):
         #  Retrieving data from images shape  ##
         ########################################
         if self.spec == 0:
-            self.input_nexusfile.opendata('TomoNormalized')
+            images = self.norm_grp['TomoNormalized']
         elif self.spec == 1:
-            self.input_nexusfile.opendata('spectroscopy_normalized')
-        infoshape = self.input_nexusfile.getinfo()
-        self.dim_images = (infoshape[0][0], infoshape[0][1], infoshape[0][2])
-        self.nFrames = infoshape[0][0]
-        self.numrows = infoshape[0][1]
-        self.numcols = infoshape[0][2]
+            images = self.norm_grp['spectroscopy_normalized']
+
+        # Shape information of data image stack
+        infoshape = images.shape
+        self.dim_images = (infoshape[0], infoshape[1], infoshape[2])
+        self.nFrames = infoshape[0]
+        self.numrows = infoshape[1]
+        self.numcols = infoshape[2]
         print("Dimensions: {0}".format(self.dim_images))
-        self.input_nexusfile.closedata()
 
     def create_image_storage_dataset(self):
-        self.align[self.data_nxs] = nxs.NXfield(name=self.data_nxs,
-                                                dtype='float32',
-                                                shape=[nxs.UNLIMITED,
-                                                       self.numrows,
-                                                       self.numcols])
-        self.align[self.data_nxs].attrs[
-            'Number of Frames'] = self.nFrames
-        self.align[self.data_nxs].attrs[
-            'Pixel Rows'] = self.numrows
-        self.align[self.data_nxs].attrs[
-            'Pixel Columns'] = self.numcols
-        self.align[self.data_nxs].write()
+        self.align.create_dataset(
+            self.data_nxs,
+            shape=(self.nFrames,
+                   self.numrows,
+                   self.numcols),
+            chunks=(1,
+                    self.numrows,
+                    self.numcols),
+            dtype='float32')
+
+        self.align[self.data_nxs].attrs['Number of Frames'] = self.nFrames
+        self.align[self.data_nxs].attrs['Pixel Rows'] = self.numrows
+        self.align[self.data_nxs].attrs['Pixel Columns'] = self.numcols
 
     def store_metadata(self):
         self.store_currents()
@@ -471,9 +436,9 @@ class Alignment(object):
 
     def initialize_align(self):
         if self.spec == 0:
-            self.input_nexusfile.opengroup('TomoNormalized')
+            self.norm_grp = self.input_nexusfile["TomoNormalized"]
         elif self.spec == 1:
-            self.input_nexusfile.opengroup('SpecNormalized')
+            self.norm_grp = self.input_nexusfile["SpecNormalized"]
 
         ###################
         # Store metadata ##
