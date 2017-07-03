@@ -12,8 +12,8 @@ __version = '2.2.3-alpha'
 long_description = """ ctalign project has born with the initial idea of make an 
 automatic alignment of tomography projections in order to allow further 
 reconstruction.
-Nowadays it is used for not only for tomography projection alignment, but also 
-for spectroscopic images alignment at ALBA BL09-Mistral beamline.
+Nowadays it is not only used for tomography projection alignment, but also
+for spectroscopic images alignment at ALBA BL09-Mistral Beamline.
 """
 
 classifiers = [
@@ -42,8 +42,8 @@ setup(
     version=__version,
     packages=find_packages(),
     entry_points={
-	'console_scripts': [
-        'ctalign = alignlib.ctalign:main']
+        'console_scripts': [
+            'ctalign = alignlib.ctalign:main']
     },
     author='Marc Rosanes',
     author_email='mrosanes@cells.es',
@@ -55,9 +55,7 @@ setup(
     description='Alignment of images of an hdf5 image stack',
     long_description=long_description,
     requires=['setuptools (>=1.1)'],
-    # Requirements used by pip. 
-    # It also depends of Nexus, but it is not added here because nxs is not
-    # present in pip, and it is deprecated.
+    # Requirements used by pip.
     install_requires=['numpy', 'h5py'],
     classifiers=classifiers
 )
