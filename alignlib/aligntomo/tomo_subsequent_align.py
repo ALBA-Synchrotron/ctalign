@@ -42,8 +42,7 @@ class TomoSubsequentAlign(Alignment):
         #  Get align and store aligned images in HDF5  ##
         #################################################
         self.central_img_num = int(self.nFrames) / 2
-        data_grp = "TomoNormalized"
-        image_data = self.norm_grp[data_grp]
+        image_data = self.norm_grp[self.dataset_name]
         self.proj1 = image_data[self.central_img_num]
         self.proj1_roi_selection = self.proj1
         # cv2.imshow('proj1',proj1)
@@ -213,8 +212,6 @@ class TomoSubsequentAlign(Alignment):
             self.mv_vector_list.append(avg_move_vector)
             self.util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
-
         self.input_nexusfile.close()
         self.align_file.close()
-
 

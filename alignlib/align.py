@@ -48,8 +48,12 @@ class Alignment(object):
         self.firstimg = firstimg
 
         if self.spec == 0:
+            self.main_grp_name = "TomoNormalized"
+            self.dataset_name = "TomoNormalized"
             self.data_aligned = 'tomo_aligned'
         elif self.spec == 1:
+            self.main_grp_name = "SpecNormalized"
+            self.dataset_name = "spectroscopy_normalized"
             self.data_aligned = 'spec_aligned'
         self.align_file = h5py.File(self.outputfilehdf5, 'w')
         self.align = self.align_file.create_group("FastAligned")
@@ -75,8 +79,6 @@ class Alignment(object):
         # create roi_points attribute
         self.roi_points = []
 
-        self.counter = 0
-
         if num_roi_horizontal == 1 and num_roi_vertical == 1:
             self.width_tem = 300
             self.height_tem = 500
@@ -92,8 +94,6 @@ class Alignment(object):
         self.col_tem_from = 0
         self.col_tem_to = 0
 
-        self.image_proj1 = 0
-        self.nxsfield = 0
         self.proj1 = 0
         self.central_img_num = 0
         self.top_left_base = 0
@@ -434,10 +434,8 @@ class Alignment(object):
         self.store_angles()
 
     def initialize_align(self):
-        if self.spec == 0:
-            self.norm_grp = self.input_nexusfile["TomoNormalized"]
-        elif self.spec == 1:
-            self.norm_grp = self.input_nexusfile["SpecNormalized"]
+
+        self.norm_grp = self.input_nexusfile[self.main_grp_name]
 
         ###################
         # Store metadata ##
