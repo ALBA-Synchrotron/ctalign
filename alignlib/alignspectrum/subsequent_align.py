@@ -52,7 +52,7 @@ class SpectrumSubsequentAlign(Alignment):
         self.proj1_roi_selection = self.image_proj1[0, :, :]
 
         slab_offset = [img_num, 0, 0]
-        self.nxsfield = self.align[self.data_nxs]
+        self.nxsfield = self.align[self.data_aligned]
         self.util_obj.store_image_in_hdf(self.image_proj1, self.nxsfield, 
                                          slab_offset)
         print('Initial reference image (%d) stored\n' % img_num)
