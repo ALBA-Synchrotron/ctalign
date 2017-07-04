@@ -1,14 +1,13 @@
 #!/usr/bin/python
 
 """
-(C) Copyright 2014 Marc Rosanes
+(C) Copyright 2014-2017 Marc Rosanes
 The program is distributed under the terms of the
 GNU General Public License (or the Lesser GPL).
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+the Free Software Foundation, version 3.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -72,8 +71,5 @@ class Utils:
             ei[0:rows - mvr, 0:cols - mvc] = pt[mvr:rows, mvc:cols]
 
         moved_proj_two = ei
-        # cv2.imshow('proj2mv',moved_proj_two)
-        # cv2.waitKey(0)
         return moved_proj_two
-
 
