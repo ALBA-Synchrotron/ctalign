@@ -44,18 +44,12 @@ class SpectrumFromFirstImgAlign(Alignment):
         #################################################
         #  Get align and store aligned images in HDF5  ##
         #################################################
-        self.input_nexusfile.opendata('spectroscopy_normalized')
         reference_img_num = 0
+        image_data = self.norm_grp[self.dataset_name]
+        self.proj1 = image_data[reference_img_num]
+        self.proj1_roi_selection = self.proj1
+        self.align[self.data_aligned][reference_img_num] = self.proj1
 
-        self.image_proj1 = self.util_obj.get_single_image(self.input_nexusfile,
-                                                          reference_img_num,
-                                                          self.numrows,
-                                                          self.numcols)
-        self.proj1_roi_selection = self.image_proj1[0, :, :]
-
-        slab_offset = [reference_img_num, 0, 0]
-        self.nxsfield = self.align[self.data_aligned]
-        self.util_obj.store_image_in_hdf(self.image_proj1, self.nxsfield, slab_offset)
         print('Initial reference image (%d) stored\n' % reference_img_num)
 
         self.central_pixel_rows = int(self.numrows / 2)
@@ -110,17 +104,11 @@ class SpectrumFromFirstImgAlign(Alignment):
         print('Initialization completed')
 
         print("Align spectroscopic images regarding the first image")
-        self.counter = 0
-        self.proj1 = self.image_proj1[0, :, :]
+        counter = 0
         # In openCV first we indicate the columns and then the rows.
         for numimg in range(reference_img_num+1, self.nFrames):
             # proj2 is the base image in which we will map the template
-            image_proj2 = self.util_obj.get_single_image(self.input_nexusfile,
-                                                         numimg,
-                                                         self.numrows,
-                                                         self.numcols)
-            proj2 = image_proj2[0, :, :]
-
+            proj2 = image_data[numimg]
             for vert in range(num_rois_vertical):
                 for horiz in range(num_rois_horizontal):
                     template = self.proj1[row_tem_from[vert]:
@@ -160,22 +148,19 @@ class SpectrumFromFirstImgAlign(Alignment):
             zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
             proj2_moved = self.util_obj.mv_projection(zeros_img, proj2, 
                                                       avg_move_vector)
-            proj2 = np.zeros([1, self.numrows, self.numcols], dtype='float32')
-            proj2[0] = proj2_moved
-            slab_offset = [numimg, 0, 0]
-            self.util_obj.store_image_in_hdf(proj2, self.nxsfield, slab_offset)
+            self.align[self.data_aligned][numimg] = proj2_moved
 
-            self.counter = self.util_obj.count(self.counter)
+            counter += 1
+            if counter % 10 == 0:
+                print("%d images have been aligned" % counter)
+
             self.mv_vector_list.append(avg_move_vector)
 
         if self.printmv == 1:
             self.util_obj.print_move(self.mv_vect_filename, self.mv_vector_list)
 
         self.align['move_vectors'] = self.mv_vector_list
-        self.align['move_vectors'].write()
-       
-        self.input_nexusfile.closedata()
-        self.input_nexusfile.closegroup()
-        self.input_nexusfile.close()
 
+        self.input_nexusfile.close()
+        self.align_file.close()
 
