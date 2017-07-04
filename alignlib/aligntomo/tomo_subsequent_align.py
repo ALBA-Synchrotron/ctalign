@@ -42,13 +42,13 @@ class TomoSubsequentAlign(Alignment):
         #  Get align and store aligned images in HDF5  ##
         #################################################
         self.central_img_num = int(self.nFrames) / 2
-        sample_image_data = self.align[self.data_nxs]
-        self.proj1 = sample_image_data[self.central_img_num]
+        data_grp = "TomoNormalized"
+        image_data = self.norm_grp[data_grp]
+        self.proj1 = image_data[self.central_img_num]
         self.proj1_roi_selection = self.proj1
         # cv2.imshow('proj1',proj1)
         # cv2.waitKey(0)
-        self.align[self.data_nxs][self.central_img_num] = self.proj1
-
+        self.align[self.data_aligned][self.central_img_num] = self.proj1
         print('Initial reference image (%d) stored' % self.central_img_num)
 
         self.central_pixel_rows = int(self.numrows / 2)
@@ -110,7 +110,7 @@ class TomoSubsequentAlign(Alignment):
             # proj2 is the image in which we will map the template issued
             # from self.proj1
 
-            proj2 = sample_image_data[numimg]
+            proj2 = image_data[numimg]
             for vert in range(num_rois_vertical):
                 for horiz in range(num_rois_horizontal):
                     template = self.proj1[row_tem_from[vert]:
@@ -150,21 +150,20 @@ class TomoSubsequentAlign(Alignment):
             zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
             proj2_moved = self.util_obj.mv_projection(zeros_img, proj2,
                                                       avg_move_vector)
-            self.align[self.data_nxs][numimg] = proj2_moved
+            self.align[self.data_aligned][numimg] = proj2_moved
             self.proj1 = proj2_moved
 
             counter += 1
             if counter % 10 == 0:
                 print("%d images have been aligned" % counter)
 
-
-
         # From the middle image to the first image going backward.
+        self.proj1 = image_data[self.central_img_num]
         for numimg in xrange(self.central_img_num-1, -1, -1):
             # proj2 is the image in which we will map the template issued
             # from proj1
 
-            proj2 = sample_image_data[numimg]
+            proj2 = image_data[numimg]
             for vert in range(num_rois_vertical):
                 for horiz in range(num_rois_horizontal):
                     template = self.proj1[row_tem_from[vert]:
@@ -203,7 +202,7 @@ class TomoSubsequentAlign(Alignment):
             zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
             proj2_moved = self.util_obj.mv_projection(zeros_img, proj2, 
                                                       avg_move_vector)
-            self.align[self.data_nxs][numimg] = proj2_moved
+            self.align[self.data_aligned][numimg] = proj2_moved
             self.proj1 = proj2_moved
 
             counter += 1

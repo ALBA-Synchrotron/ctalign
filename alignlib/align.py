@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 """
-(C) Copyright 2014 Marc Rosanes
+(C) Copyright 2014-2017 Marc Rosanes
 The program is distributed under the terms of the 
 GNU General Public License (or the Lesser GPL).
 
@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 import os
 import numpy as np
 import cv2
@@ -29,6 +30,7 @@ from alignlib.utils import Utils
 
 
 class Alignment(object):
+
     # Constructor of Alignment object ###
     def __init__(self, inputfile, roi_select, spec, firstimg, printmv,
                  num_roi_horizontal, num_roi_vertical, width, height):
@@ -46,9 +48,9 @@ class Alignment(object):
         self.firstimg = firstimg
 
         if self.spec == 0:
-            self.data_nxs = 'tomo_aligned'
+            self.data_aligned = 'tomo_aligned'
         elif self.spec == 1:
-            self.data_nxs = 'spec_aligned'
+            self.data_aligned = 'spec_aligned'
         self.align_file = h5py.File(self.outputfilehdf5, 'w')
         self.align = self.align_file.create_group("FastAligned")
         self.align.attrs['NX_class'] = "NXentry"
@@ -64,7 +66,6 @@ class Alignment(object):
         self.nFrames = 0
         self.numrows = 0
         self.numcols = 0
-        self.dim_images = (0, 0, 1)
 
         self.numroihoriz = num_roi_horizontal
         self.numroivert = num_roi_vertical
@@ -170,6 +171,7 @@ class Alignment(object):
         coords_mv_proj = np.array(coords_mv_proj)
         # We have to bring the proj2 (mv_proj) to the base_proj (fixed proj)
         mv_vector = coords_base_proj - coords_mv_proj
+        #print(mv_vector)
         return mv_vector
 
     def find_mv_vector_from_many_rois(self, move_vectors_matrix):
@@ -205,8 +207,6 @@ class Alignment(object):
 
         for vert in range(self.numroivert):
             for horiz in range(self.numroihoriz):
-                #print(move_vectors_matrix[vert][horiz])
-
                 mv_list.append(list(move_vectors_matrix[vert][horiz]))
 
         # We sort the mv_vectors list by its first element
@@ -290,11 +290,11 @@ class Alignment(object):
                 threshold_similarity = threshold_similarity - i*0.05
                 threshold_similar_vectors = (threshold_similarity *
                                              len_filtered_vectors)
-                for i in range(len(sorted_mv_list)):
-                    counts = counts_of_similar_vectors[i]
+                for j in range(len(sorted_mv_list)):
+                    counts = counts_of_similar_vectors[j]
                     if counts >= threshold_similar_vectors:
                         second_elem_filtered_mv_vectors.append(
-                            sorted_mv_list[i])
+                            sorted_mv_list[j])
             else:
                 break
 
@@ -406,15 +406,14 @@ class Alignment(object):
 
         # Shape information of data image stack
         infoshape = images.shape
-        self.dim_images = (infoshape[0], infoshape[1], infoshape[2])
         self.nFrames = infoshape[0]
         self.numrows = infoshape[1]
         self.numcols = infoshape[2]
-        print("Dimensions: {0}".format(self.dim_images))
+        print("Dimensions: {0}".format(infoshape))
 
     def create_image_storage_dataset(self):
         self.align.create_dataset(
-            self.data_nxs,
+            self.data_aligned,
             shape=(self.nFrames,
                    self.numrows,
                    self.numcols),
@@ -423,9 +422,9 @@ class Alignment(object):
                     self.numcols),
             dtype='float32')
 
-        self.align[self.data_nxs].attrs['Number of Frames'] = self.nFrames
-        self.align[self.data_nxs].attrs['Pixel Rows'] = self.numrows
-        self.align[self.data_nxs].attrs['Pixel Columns'] = self.numcols
+        self.align[self.data_aligned].attrs['Number of Frames'] = self.nFrames
+        self.align[self.data_aligned].attrs['Pixel Rows'] = self.numrows
+        self.align[self.data_aligned].attrs['Pixel Columns'] = self.numcols
 
     def store_metadata(self):
         self.store_currents()
