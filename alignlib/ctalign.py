@@ -137,8 +137,6 @@ def main():
         # shall correct this jump by interpolating the moving vectors. 
         post_alignment = PostAlignRemoveJumps(args.inputfile,
                                               args.rmjumpshdf)
-
-
         post_alignment.move_images()
 
 
