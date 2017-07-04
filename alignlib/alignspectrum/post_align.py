@@ -18,29 +18,27 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import nxs
+import h5py
 import numpy as np
 from alignlib.utils import Utils
 
 
-class PostAlignRemoveJumps():
+class PostAlignRemoveJumps:
 
     def __init__(self, normalizedfile, alignfile):
 
-        self.normalized_nexusfile = nxs.open(normalizedfile, 'r')
-        self.aligned_nexusfile = nxs.nxload(alignfile, 'rw')
+        self.normalized_nexusfile = h5py.File(normalizedfile, 'r')
+        self.aligned_nexusfile = h5py.File(alignfile, 'r+')
         self.util_obj = Utils()
+        self.norm_grp = self.normalized_nexusfile['SpecNormalized']
+        self.aligned_grp = self.aligned_nexusfile['FastAligned']
 
         try:
-            vectors = self.aligned_nexusfile['FastAligned']['move_vectors']
+            vectors = self.aligned_grp['move_vectors']
             self.move_vectors = vectors
         except Exception: 
             print("\nMove vectors could NOT be found.\n")
             raise
-   
-        self.nFrames = 0
-        self.numrows = 0
-        self.numcols = 0
 
     # Processing and calculation method. Interpolation and/or extrapolation for
     # the first and the last image if they contain a big jump.
@@ -50,13 +48,12 @@ class PostAlignRemoveJumps():
         # + the move_vectors by which have to be moved those images.
         # List of images to move and its corrected moving vector
         # Ex:[[3, [121, 122]],[20, [-20, -30]], [124, [30, -70]]]
-        
-        
-        ## With the two components of the moving vectors independently
-        ## do a linear regression of those two lines. Do the subtraction
-        ## between the line of the linear regression and the real data.
-        ## Do it for one data component, and for the other component.
-        ## Then find the outliers and correct them.
+
+        # With the two components of the moving vectors independently
+        # do a linear regression of those two lines. Do the subtraction
+        # between the line of the linear regression and the real data.
+        # Do it for one data component, and for the other component.
+        # Then find the outliers and correct them.
         rows = np.array(self.move_vectors[:, 0])
         columns = np.array(self.move_vectors[:, 1])
         len_vector = np.shape(self.move_vectors)[0]
@@ -142,12 +139,14 @@ class PostAlignRemoveJumps():
         # Do it by interpolating.
         # We interpolate each group of correlative jumping images.
         for i in range(len(groups_idx)):
+
             group_idx = groups_idx[i]
             # first index in group
             first = group_idx[0]
             # last index in group
             last = group_idx[-1]
-            if (group_idx[-1] != len_vector-1):
+
+            if group_idx[-1] != len_vector-1:
                 # If group does NOT contain index of last image in the stack
                 row_before = rows[first-1]
                 row_after = rows[last+1]
@@ -164,7 +163,6 @@ class PostAlignRemoveJumps():
                     columns[idx] = int(col_before+c*step_col)
             elif group_idx[-1] == len_vector-1:
                 # If group contains index of last image in the stack
-                c = 0
                 for idx in group_idx:
                     rows[idx] = int(rows[first-1])
                     columns[idx]= int(columns[first-1])
@@ -177,48 +175,30 @@ class PostAlignRemoveJumps():
         #images_to_mv = [[5, [121, 122]],[7, [-20, -30]], [146, [-20, -30]]]
         return images_to_mv
 
-
     def move_images(self):
 
-        self.normalized_nexusfile.opengroup('SpecNormalized')
-        self.normalized_nexusfile.opendata('spectroscopy_normalized')
-        infoshape = self.normalized_nexusfile.getinfo()
-        self.nFrames = infoshape[0][0]
-        self.numrows = infoshape[0][1]
-        self.numcols = infoshape[0][2]
+        infoshape = self.norm_grp['spectroscopy_normalized'].shape
+        numrows = infoshape[1]
+        numcols = infoshape[2]
 
         # Get image to move (and the vector for which it has to be moved) 
         # with method 'images_to_move'.
         images_to_mv = self.images_to_move()
         # Move images that contained a big jump (incorrectly aligned), 
         # according to the output of images_to_move method.
-        nxsfield = self.aligned_nexusfile['FastAligned']['spec_aligned']
-        vects_field = self.aligned_nexusfile['FastAligned']['move_vectors']
+        vects_field = self.aligned_grp['move_vectors']
         for i in range(len(images_to_mv)):
             img_num = images_to_mv[i][0]
-            slab = self.util_obj.get_single_image(self.normalized_nexusfile,
-                                                  img_num,
-                                                  self.numrows,
-                                                  self.numcols)
-
+            image = self.norm_grp['spectroscopy_normalized'][img_num]
             mv_vector = images_to_mv[i][1]
-
             vects_field[img_num] = mv_vector
-            zeros_img = np.zeros((self.numrows, self.numcols), dtype='float32')
-            image = slab[0, :, :]
-            image_moved = self.util_obj.mv_projection(zeros_img, 
+            zeros_img = np.zeros((numrows, numcols), dtype='float32')
+            image_moved = self.util_obj.mv_projection(zeros_img,
                                                       image, mv_vector)
-            slab_moved = np.zeros([1, self.numrows, self.numcols], 
-                                   dtype='float32')
-            slab_moved[0] = image_moved
-            slab_offset = [img_num, 0, 0]
-            self.util_obj.store_image_in_hdf(slab_moved, nxsfield, slab_offset)
+            self.aligned_grp['spec_aligned'][img_num] = image_moved
+
             print('Alignment of image (%d) corrected' % img_num)
 
-        vects_field.write()
-
-
-
-
-
+        self.normalized_nexusfile.close()
+        self.aligned_nexusfile.close()
 
