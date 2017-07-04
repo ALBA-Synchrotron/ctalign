@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 # The version is updated automatically with bumpversion
 # Do not update manually
-__version = '2.3.0-alpha' 
+__version = '2.3.0' 
 
 
 long_description = """ ctalign project has born with the initial idea of make an 
