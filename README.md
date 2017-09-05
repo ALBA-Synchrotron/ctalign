@@ -1,14 +1,7 @@
 
-*ctalign is distributed under the terms of the 
-GNU General Public License (or GPL).*
+**ctalign** allows to perform an automatic alignment of an image stack.
 
-
-ctalign
--------
-
-**ctalign** allows to perform an automatic alignment of stacks of images.
-
-It can be used between others to:
+It can be used among others to:
 
 * Align tomography projections (in order to improve the quality of the 
 subsequent reconstruction).
@@ -16,6 +9,12 @@ subsequent reconstruction).
 * Align spectroscopy images: images taken at different light energies.
 
 It is used at BL09 of the ALBA-CELLS Synchrotron.
+
+-----
+
+*ctalign is distributed under the terms of the 
+GNU General Public License (or GPL).*
+
 
 
 
