@@ -56,7 +56,7 @@ setup(
     long_description=long_description,
     requires=['setuptools (>=1.1)'],
     # Requirements used by pip.
-    install_requires=['numpy', 'h5py'],
+    install_requires=['numpy'],
     classifiers=classifiers
 )
 
