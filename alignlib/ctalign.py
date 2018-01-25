@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 import time
 import argparse
 
@@ -29,53 +30,53 @@ from alignspectrum.fromfirstimage_align import \
     SpectrumFromFirstImgAlign
 from alignspectrum.post_align import PostAlignRemoveJumps
 
+
 def main():
     parser = argparse.ArgumentParser(
                         description="Align the images \n")
 
     parser.add_argument('inputfile', type=str, default=None,
-        help='Enter hdf5 file containing the normalized tomography or '
-              + 'spectroscopy')
+                        help='Enter hdf5 file containing the normalized '
+                             'tomography or spectroscopy')
     parser.add_argument('-r', '--roi', type=int, default=0, 
                         help='Option for allowing ROI selection. \n' +
                         'Default = 0')
-    parser.add_argument('-x','--nroihoriz', type=int, default=1, 
-        help='Used for multiple ROIs: Number of ROIs " + '
-             'in horizontal direction. \n' +
-             'Default = 1')
-    parser.add_argument('-y', '--nroivert', type=int, default=1, 
-        help='Used for multiple ROIs: Number of ROIs in vertical direction. \n' +
-               'Default = 1')
+    parser.add_argument('-x','--nroihoriz', type=int, default=1,
+                        help='Used for multiple ROIs: Number of ROIs " + '
+                             'in horizontal direction. \nDefault = 1')
+    parser.add_argument('-y', '--nroivert', type=int, default=1,
+                        help='Used for multiple ROIs: Number of ROIs in '
+                             'vertical direction.\nDefault = 1')
     parser.add_argument('-ww', '--width', type=int, default=200,
-        help='Used for multiple ROIs: Width of ROI in pixels. \n' +
-               'Default = 200')
+                        help='Used for multiple ROIs: Width of '
+                             'ROI in pixels. \nDefault = 200')
     parser.add_argument('-hh', '--height', type=int, default=200,
-        help='Used for multiple ROIs: Height of ROI in pixels. \n' +
-               'Default = 200')
-    parser.add_argument('-s', '--spectrum', type=int, default=0, 
-        help='Align projections -s=0 || Align spectral images -s=1. \n' +
-               'Default = 0')
-    parser.add_argument('-f', '--firstimg', type=int, default=1, 
-        help='Align spectroscopic images regarding the previous image' +
-               ' (-f=0)\n, regarding the first image (-f=1)\n or linearly ' +
-               'between the first and the last images (-f=2).\n' +
-               'Default = 1')
+                        help='Used for multiple ROIs: Height of ROI in '
+                             'pixels. \nDefault = 200')
+    parser.add_argument('-s', '--spectrum', type=int, default=0,
+                        help='Align projections -s=0 || Align spectral '
+                             'images -s=1. \nDefault = 0')
+    parser.add_argument('-f', '--firstimg', type=int, default=1,
+                        help='Align spectroscopic images regarding the '
+                             'previous image (-f=0)\n, regarding the '
+                             'first image (-f=1)\n or linearly between the '
+                             'first and the last images (-f=2).\n'
+                             'Default = 1')
     parser.add_argument('-m', '--printmv', type=int, default=0, 
                         help='Print move vectors between images. \n' +
                         'Default = 0')
     parser.add_argument('-j', '--rmjumpshdf', type=str, default=None,
-        help= 'Post-alignment for removing jumps in spectroscopies.\n' +
-              'Mandatory argument: hdf5 normalized spectroscopy' +
-              'j= hdf5 containing the aligned spectroscopy.')
+                        help='Post-alignment for removing jumps in '
+                             'spectroscopies.\n' +
+                             'j= hdf5 containing the aligned spectroscopy.')
     args = parser.parse_args()
 
     print("\nAligning images\n")
 
     start_time = time.time()
 
-
-    # Main alignment.
-    if (args.rmjumpshdf == None):
+    # Main alignment
+    if args.rmjumpshdf is None:
         if args.spectrum == 0:
             tomo_alignment = TomoSubsequentAlign(args.inputfile,
                                                  args.roi,
@@ -139,14 +140,10 @@ def main():
                                               args.rmjumpshdf)
         post_alignment.move_images()
 
-
-
     print("\nImages aligned\n\n")
 
     print("--- %s minutes ---\n" % ((time.time() - start_time)/60))
 
 
-
 if __name__ == "__main__":
     main()
-
